@@ -19,15 +19,17 @@ export class BarChartComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    const maxData = d3.max(this.dataset, (d) => d);
+    const yAxisScale = d3.scaleLinear().domain([0, maxData]).range([0, this.h - 10]);
     const svgContainer = d3.select('svg').attr('width', this.w)
       .attr('height', this.h).style('border', '1px solid black');
     // Bars
     svgContainer.selectAll('rect').data(this.dataset).enter()
       .append('rect')
       .attr('x', (d, i) => i * this.w / this.dataset.length)
-      .attr('y', (d) => this.h - d * 4)
+      .attr('y', (d) => this.h - yAxisScale(d) - 5)
       .attr('width', this.w / this.dataset.length - this.barPadding)
-      .attr('height', (d) => d * 4)
+      .attr('height', (d) => yAxisScale(d))
       .attr('fill', (d) => 'rgb(20, ' + (255 - (d * 5)) + ',' + (255 - (d * 10)) + ')');
 
     // Bar labels
@@ -35,7 +37,7 @@ export class BarChartComponent implements OnInit {
       .append('text')
       .text((d) => d)
       .attr('x', (d, i) => i * (this.w / this.dataset.length) + 6)
-      .attr('y', (d) => this.h - d * 4 + 14)
+      .attr('y', (d) => this.h - yAxisScale(d) + 14)
       .attr('font-family', 'sans-serif')
       .attr('font-size', '11px')
       .attr('fill', 'white');

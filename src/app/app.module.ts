@@ -8,13 +8,15 @@ import {SensorsService} from './sensors.service';
 import { AppRoutingModule } from './/app-routing.module';
 import {FormsModule} from '@angular/forms';
 import { BarChartComponent } from './bar-chart/bar-chart.component';
+import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChartComponent,
     SensorListComponent,
-    BarChartComponent
+    BarChartComponent,
+    ScatterPlotComponent
   ],
   imports: [
     BrowserModule,

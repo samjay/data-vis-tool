@@ -24,14 +24,11 @@ export class SensorListComponent implements OnInit {
   showChart(sensor: Sensor) {
     // this.router.navigate(['chart/' + sensor.id]);
     this.selectedSensor = sensor;
-    this.setChart();
+    this.chart = this.selectedSensor.chart;
   }
 
   getSensors(): void {
     this.sensorService.getSensors().subscribe( sensors => this.sensors = sensors);
   }
 
-  setChart() {
-      this.chart = CHARTS.find(chart => chart.id === this.selectedSensor.id);
-  }
 }
