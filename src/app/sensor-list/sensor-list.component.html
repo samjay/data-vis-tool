@@ -1,0 +1,15 @@
+<h2>Sensor List</h2>
+<ul class="sensors">
+  <li *ngFor="let sensor of sensors">
+    <a role="button" (click)="showChart(sensor)"><span>{{sensor.id}} </span>
+      {{sensor.name}}</a>
+  </li>
+</ul>
+<div *ngIf="chart">
+<div *ngIf="chart.id === 1">
+  <app-bar-chart [sensor]="selectedSensor"></app-bar-chart>
+</div>
+<div *ngIf="chart.id === 2">
+<app-chart [sensor]="selectedSensor"></app-chart>
+</div>
+</div>
