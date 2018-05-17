@@ -1,0 +1,14 @@
+/* Shadow piercing used to solve styles applied to d3 svg
+https://stackoverflow.com/questions/36214546/styles-in-component-for-d3-js-do-not-show-in-angular-2/36214723#36214723
+*/
+* >>> .axis path,
+* >>> .axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+* >>> .axis text {
+  font-family: sans-serif;
+  font-size: 11px;
+}
