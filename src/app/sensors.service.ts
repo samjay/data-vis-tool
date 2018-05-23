@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Sensor} from './models/sensor';
 import {SENSORS} from './sensor-list/sensors-list';
-import {Observable} from 'rxjs/index';
-import {of} from 'rxjs/index';
+import {Observable, of} from 'rxjs/index';
 
 @Injectable({
   providedIn: 'root'

@@ -9,6 +9,7 @@ import { AppRoutingModule } from './/app-routing.module';
 import {FormsModule} from '@angular/forms';
 import { BarChartComponent } from './bar-chart/bar-chart.component';
 import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
+import {BootstrapModule} from "./bootstrap/bootstrap.module";
 
 @NgModule({
   declarations: [

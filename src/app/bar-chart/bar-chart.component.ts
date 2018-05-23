@@ -14,6 +14,7 @@ export class BarChartComponent implements OnInit {
   w = 500;
   h = 150;
   barPadding = 1;
+  parseDate;
 
   @Input() sensor: Sensor;
   constructor() { }
