@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import {Sensor} from '../models/sensor';
+import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
 import {parseDate} from 'ngx-bootstrap/chronos';
 
@@ -24,7 +25,7 @@ export class ChartComponent implements OnInit {
   lineFunction;
   parseDate;
 
-  constructor() { }
+  constructor(private dateFilterService: DateFilterService) { }
 
   @Input() sensor: Sensor;
 
@@ -42,6 +43,9 @@ export class ChartComponent implements OnInit {
     this.lineData.forEach((d) => {
       this.preparedData.push({'date': this.parseDate(d.date), 'y': d.y});
     });
+    this.preparedData.sort((x, y) => d3.ascending(x.date, y.date));
+    this.dateFilterService.lowerDate = this.preparedData[0].date;
+    this.dateFilterService.upperDate = this.preparedData[this.preparedData.length - 1].date;
   }
 
   draw() {
