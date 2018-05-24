@@ -1,8 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
-import {Sensor} from '../models/sensor';
+import { Sensor } from '../models/sensor';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
-import {parseDate} from 'ngx-bootstrap/chronos';
 
 @Component({
   selector: 'app-chart',
