@@ -1,7 +1,6 @@
-<mat-slider (change)="updateValLow(refl.value)" #refl min="1" [max]="maxNum / 2" step="1" [value]="maxNum" invert></mat-slider>
-<mat-slider (change)="updateValHigh(refh.value)" #refh  [min]="maxNum / 2" [max]="maxNum" step="1" [value]="maxNum"></mat-slider>
-<br/>
 <br/>
 <span>{{fromDateDisp}}</span>
+<mat-slider (change)="updateValLow(refl.value)" #refl min="1" [max]="maxNum / 2" step="1" [value]="maxNum" invert></mat-slider>
+<mat-slider (change)="updateValHigh(refh.value)" #refh  [min]="maxNum / 2" [max]="maxNum" step="1" [value]="maxNum"></mat-slider>
 <br/>
 <span>{{toDateDisp}}</span>

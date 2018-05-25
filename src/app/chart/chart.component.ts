@@ -21,8 +21,10 @@ export class ChartComponent implements OnInit {
   h = 400;
   padding = 25;
   svgContainer;
-  lineFunction;
   parseDate;
+  fromDateDispC;
+  toDateDispC;
+  formatDateC;
 
   constructor(private dateFilterService: DateFilterService) { }
 
@@ -32,7 +34,8 @@ export class ChartComponent implements OnInit {
     this.svgContainer = d3.select('#chart').append('svg').attr('width',  this.w)
       .attr('height', this.h).style('border', '1px solid black');
     this.prepare();
-    // this.randomize();
+    this.formatDateC = d3.timeFormat('%d-%b-%y');
+
    // this.setMaxBoundaries();
     this.draw();
   }
@@ -90,8 +93,8 @@ export class ChartComponent implements OnInit {
       .call(yAxis);
 
     // Draw Line
-    this.lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y)).curve(d3.curveBasis);
-    this.svgContainer.append('path').attr('d', this.lineFunction(this.preparedData)).attr('stroke', 'blue')
+    const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y)).curve(d3.curveBasis);
+    this.svgContainer.append('path').attr('d', lineFunction(this.preparedData)).attr('stroke', 'blue')
       .attr('stroke-width', 4).attr('fill', 'none');
   }
 
@@ -134,6 +137,20 @@ export class ChartComponent implements OnInit {
       .filter((d) =>
         d.date > this.parseDate('01-Sep-16') &&
         d.date < this.parseDate('20-Feb-17'));
+    this.draw();
+  }
+
+  onFromDateChange(dateRange: any) {
+    this.formatDateC = d3.timeFormat('%d-%b-%y');
+    this.toDateDispC = dateRange.to;
+    this.fromDateDispC = dateRange.from;
+    this.preparedData = [];
+    this.lineData.forEach((d) => {
+      this.preparedData.push({'date': this.parseDate(d.date), 'y': d.y});
+    });
+    this.preparedData = this.preparedData
+      .filter((d) =>
+        d.date >= this.parseDate(dateRange.from) && d.date <= this.parseDate(dateRange.to));
     this.draw();
   }
 }
