@@ -9,11 +9,11 @@ import { AppRoutingModule } from './/app-routing.module';
 import {FormsModule} from '@angular/forms';
 import { BarChartComponent } from './bar-chart/bar-chart.component';
 import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
-import {BootstrapModule} from './bootstrap/bootstrap.module';
 import {DateFilterService} from './date-filter.service';
 import { DateSliderComponent } from './date-slider/date-slider.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatSliderModule} from '@angular/material';
+import { HttpClientModule } from "@angular/common/http";
 
 @NgModule({
   declarations: [
@@ -29,7 +29,8 @@ import {MatSliderModule} from '@angular/material';
     FormsModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatSliderModule
+    MatSliderModule,
+    HttpClientModule
   ],
   providers: [
     SensorsService,
