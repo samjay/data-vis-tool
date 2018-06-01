@@ -26,7 +26,7 @@ export class DateSliderComponent implements OnInit {
     this.dateFilterService.getUpperDate().subscribe(upperDate => this.toDateObj = upperDate);
 
     // display min and max date
-    this.formatDate = d3.timeFormat('%d-%b-%y');
+    this.formatDate = d3.timeFormat('%m/%d/%Y %H:%M:%S');
     this.fromDateDisp = this.formatDate(this.fromDateObj);
     this.toDateDisp = this.formatDate(this.toDateObj);
 
@@ -44,19 +44,13 @@ export class DateSliderComponent implements OnInit {
 
   updateValLow(value: number) {
     this.fromDateDisp = this.formatDate(this.dateScale(this.maxNum / 2 - value));
-    // this.dateFilterService.lowerDate = this.dateScale(this.maxNum / 2 - value);
     this.dateFilterChange.emit({'from': this.fromDateDisp , 'to': this.toDateDisp});
-    console.log(this.fromDateObj);
-    console.log(this.toDateObj);
-    console.log(this.dateScale(this.maxNum / 2 - value));
+
   }
 
   updateValHigh(value: number) {
     this.toDateDisp = this.formatDate(this.dateScale(value));
-    // this.dateFilterService.upperDate = this.dateScale(value);
     this.dateFilterChange.emit({'from': this.fromDateDisp, 'to': this.toDateDisp});
-    console.log(this.fromDateObj);
-    console.log(this.toDateObj);
-    console.log(this.dateScale(value));
+
   }
 }

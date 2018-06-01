@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Sensor } from '../models/sensor';
 import { SensorsService } from '../sensors.service';
-import {Router} from '@angular/router';
 import {Chart} from '../models/chart';
-import {CHARTS} from '../chart/chart-list';
+import {DataFileService} from '../data-file.service';
 
 @Component({
   selector: 'app-sensor-list',
@@ -15,10 +14,12 @@ export class SensorListComponent implements OnInit {
   sensors: Sensor[];
   selectedSensor: Sensor;
   chart: Chart;
-  constructor(private sensorService: SensorsService, private router: Router) { }
+  constructor(private sensorService: SensorsService,
+              private dataFileService: DataFileService) { }
 
   ngOnInit() {
     this.getSensors();
+    this.dataFileService.readFileData();
   }
 
   showChart(sensor: Sensor) {

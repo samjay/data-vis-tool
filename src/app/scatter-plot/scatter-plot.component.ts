@@ -9,8 +9,11 @@ import {Sensor} from '../models/sensor';
 })
 export class ScatterPlotComponent implements OnInit {
   dataset = [];
-  w = 620;
-  h = 400;
+
+  margin = {top: 20, right: 20, bottom: 50, left: 70};
+  width = 960 - this.margin.left - this.margin.right;
+  height = 500 - this.margin.top - this.margin.bottom;
+
   padding = 30;
   svgContainer;
 
@@ -19,22 +22,22 @@ export class ScatterPlotComponent implements OnInit {
   @Input() sensor: Sensor;
 
   ngOnInit() {
-    this.svgContainer = d3.select('#chart').append('svg').attr('width', this.w)
-      .attr('height', this.h).style('border', '1px solid black');
+    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', this.width)
+      .attr('height', this.height).style('border', '1px solid black');
     this.randomize();
     this.draw();
   }
 
   draw() {
     this.svgContainer.remove();
-    this.svgContainer = d3.select('#chart').append('svg').attr('width', this.w)
-      .attr('height', this.h).style('border', '1px solid black');
+    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', this.width)
+      .attr('height', this.height).style('border', '1px solid black');
     const xScale = d3.scaleLinear()
       .domain([0, d3.max(this.dataset, (d) => d[0])])
-      .range([this.padding, this.w - this.padding * 2]);
+      .range([this.margin.left, this.width - this.margin.right]);
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(this.dataset, (d) => d[1])])
-      .range([this.h - this.padding, this.padding]);
+      .range([this.height - this.margin.bottom, this.margin.bottom]);
     const rScale = d3.scaleLinear().domain([0, d3.max(this.dataset, (d) => d[1])]).range([2, 5]);
     const xAxis = d3.axisBottom(xScale).ticks(5);
     const yAxis = d3.axisLeft(yScale);
@@ -57,16 +60,16 @@ export class ScatterPlotComponent implements OnInit {
     // Add Axis
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(0,' + (this.h - this.padding) + ')')
+      .attr('transform', 'translate(0,' + (this.height - this.margin.bottom) + ')')
       .call(xAxis);
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(' + this.padding  + ', 0)')
+      .attr('transform', 'translate(' + this.margin.left  + ', 0)')
       .call(yAxis);
 
   }
 
-  randomizeAndDraw(){
+  randomizeAndDraw() {
     this.randomize();
     this.draw();
   }

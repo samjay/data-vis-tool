@@ -1,9 +1,9 @@
-<div id="chart"></div>
+<div id="lineChart"></div>
 <div *ngIf="sensor">
 <span>{{sensor.name}}</span>
 </div>
 <br/>
-<app-date-slider (dateFilterChange)="onFromDateChange($event)"></app-date-slider>
+<app-date-slider *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
 
 
 
