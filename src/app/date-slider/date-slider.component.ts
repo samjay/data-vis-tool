@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
 
@@ -8,14 +8,17 @@ import * as d3 from 'd3';
   styleUrls: ['./date-slider.component.css']
 })
 export class DateSliderComponent implements OnInit {
-
-  formatDate;
+  formatDateShort;
   fromDateObj: Date;
   toDateObj: Date;
   fromDateDisp;
   toDateDisp;
   dateScale;
   maxNum = 20;
+  valFrom;
+  valTo;
+  dateRange = [3, 5];
+  toolTipFormat;
   @Output() dateFilterChange = new EventEmitter<any>();
 
   constructor(private dateFilterService: DateFilterService) { }
@@ -26,31 +29,34 @@ export class DateSliderComponent implements OnInit {
     this.dateFilterService.getUpperDate().subscribe(upperDate => this.toDateObj = upperDate);
 
     // display min and max date
-    this.formatDate = d3.timeFormat('%m/%d/%Y %H:%M:%S');
-    this.fromDateDisp = this.formatDate(this.fromDateObj);
-    this.toDateDisp = this.formatDate(this.toDateObj);
+    this.formatDateShort = d3.timeFormat('%m/%d/%Y');
+    this.fromDateDisp = this.formatDateShort(this.fromDateObj);
+    this.toDateDisp = this.formatDateShort(this.toDateObj);
 
     // date difference for max num
     const oneDay = 24 * 3600 * 1000;
     const difference =  this.toDateObj.getTime() - this.fromDateObj.getTime();
     this.maxNum = Math.round(difference / oneDay);
-    console.log(this.maxNum);
+    this.valFrom = 1;
+    this.valTo = this.maxNum;
+    this.dateRange = [1, this.maxNum];
 
     // date scale
     this.dateScale = d3.scaleTime()
       .domain([1, this.maxNum])
       .range([this.fromDateObj, this.toDateObj]);
+
+    this.toolTipFormat = {
+      to: (v) => {
+      return this.formatDateShort(this.dateScale(v));
+    },
+      from: (v) => {
+      return v; }
+    };
   }
 
-  updateValLow(value: number) {
-    this.fromDateDisp = this.formatDate(this.dateScale(this.maxNum / 2 - value));
-    this.dateFilterChange.emit({'from': this.fromDateDisp , 'to': this.toDateDisp});
-
+  onChange( value: any) {
+    this.dateFilterChange.emit({'from': value[0], 'to': value[1]});
   }
 
-  updateValHigh(value: number) {
-    this.toDateDisp = this.formatDate(this.dateScale(value));
-    this.dateFilterChange.emit({'from': this.fromDateDisp, 'to': this.toDateDisp});
-
-  }
 }

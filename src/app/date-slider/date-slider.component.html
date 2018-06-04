@@ -1,6 +1,11 @@
-<br/>
-<span>{{fromDateDisp}}</span>
-<mat-slider (change)="updateValLow(refl.value)" #refl min="1" [max]="maxNum / 2" step="1" [value]="maxNum" invert></mat-slider>
-<mat-slider (change)="updateValHigh(refh.value)" #refh  [min]="maxNum / 2" [max]="maxNum" step="1" [value]="maxNum"></mat-slider>
-<br/>
-<span>{{toDateDisp}}</span>
+<div style="width: 900px">
+  <nouislider style="width: 800px; margin-left: 40px"
+              [connect]="true" [min]="1" [max]="maxNum" [step]="1"
+              [(ngModel)]="dateRange" [tooltips]="[true, true]" [format]="toolTipFormat"
+              (ngModelChange)="onChange($event)"></nouislider>
+  <br/>
+  <span>{{fromDateDisp}}</span>
+  <span style="float: right">{{toDateDisp}}</span>
+</div>
+
+

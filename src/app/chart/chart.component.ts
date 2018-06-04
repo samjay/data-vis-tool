@@ -52,13 +52,15 @@ export class ChartComponent implements OnInit {
 
   prepare(full: boolean, fromDate: string, toDate: string) {
     this.preparedData = [];
-    this.parseDate = d3.timeParse('%m/%d/%Y %H:%M:%S');
+
     this.readData.forEach((d) => {
+      this.parseDate = d3.timeParse('%m/%d/%Y %H:%M:%S');
       if (d.SITE_ID === 'BBE401') {
         this.preparedData.push({'date': this.parseDate(d.DATEOFF), 'y': d.SO4_CONC});
       }
     });
     if (!full) {
+      this.parseDate = d3.timeParse('%m/%d/%Y');
       this.preparedData = this.preparedData
         .filter((d) =>
           d.date >= this.parseDate(fromDate) && d.date <= this.parseDate(toDate));

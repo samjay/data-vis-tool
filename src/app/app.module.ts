@@ -12,8 +12,8 @@ import { ScatterPlotComponent } from './scatter-plot/scatter-plot.component';
 import {DateFilterService} from './date-filter.service';
 import { DateSliderComponent } from './date-slider/date-slider.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatSliderModule} from '@angular/material';
-import { HttpClientModule } from "@angular/common/http";
+import { HttpClientModule } from '@angular/common/http';
+import {NouisliderModule} from 'ng2-nouislider';
 
 @NgModule({
   declarations: [
@@ -29,8 +29,8 @@ import { HttpClientModule } from "@angular/common/http";
     FormsModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatSliderModule,
-    HttpClientModule
+    HttpClientModule,
+    NouisliderModule
   ],
   providers: [
     SensorsService,
