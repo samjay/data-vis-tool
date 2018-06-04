@@ -14,6 +14,7 @@ import { DateSliderComponent } from './date-slider/date-slider.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import {NouisliderModule} from 'ng2-nouislider';
+import { TunnelNetworkComponent } from './tunnel-network/tunnel-network.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import {NouisliderModule} from 'ng2-nouislider';
     SensorListComponent,
     BarChartComponent,
     ScatterPlotComponent,
-    DateSliderComponent
+    DateSliderComponent,
+    TunnelNetworkComponent
   ],
   imports: [
     BrowserModule,

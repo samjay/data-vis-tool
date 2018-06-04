@@ -23,7 +23,6 @@ export class SensorListComponent implements OnInit {
   }
 
   showChart(sensor: Sensor) {
-    // this.router.navigate(['chart/' + sensor.id]);
     this.selectedSensor = sensor;
     this.chart = this.selectedSensor.chart;
   }

@@ -109,7 +109,7 @@ export class ChartComponent implements OnInit {
     const xScale = d3.scaleTime()
       .domain(d3.extent(this.preparedData, (d) => d.date))
       .range([this.margin.left, this.width - this.margin.right]);
-    const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y)).curve(d3.curveBasis);
+    const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y));
     this.svgContainer.append('path').attr('d', lineFunction(this.preparedData)).attr('stroke', 'blue')
       .attr('stroke-width', 1).attr('fill', 'none');
   }
