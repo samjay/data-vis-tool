@@ -29,18 +29,10 @@ export class BarChartComponent implements OnInit {
       .attr('transform',
         'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
-
-    // this.dataFileService.getReadData().subscribe( data => {
-    //   const readData = data;
-    //   if (readData && readData.length > 0) {
-    //     this.updateWithCSV(readData);
-    //   }
-    // });
     d3.csv('assets/baseball_data.csv').then((data) => {
       this.readData = data;
       this.prepare();
       this.draw();
-      // this.updateWithCSV(data);
     });
 
   }

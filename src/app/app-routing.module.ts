@@ -6,7 +6,7 @@ import {TunnelNetworkComponent} from './tunnel-network/tunnel-network.component'
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
   { path: 'home', component: TunnelNetworkComponent},
-  { path: 'sensors', component: SensorListComponent}
+  { path: 'location/:id', component: SensorListComponent}
 ];
 
 @NgModule({
