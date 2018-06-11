@@ -1,6 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
+import {height, margin, width} from '../common/svg-dimensions';
+import {xRange, yRange} from '../common/range';
 
 @Component({
   selector: 'app-scatter-plot',
@@ -9,12 +11,6 @@ import {Sensor} from '../models/sensor';
 })
 export class ScatterPlotComponent implements OnInit {
   dataset = [];
-
-  margin = {top: 20, right: 20, bottom: 50, left: 70};
-  width = 960 - this.margin.left - this.margin.right;
-  height = 500 - this.margin.top - this.margin.bottom;
-
-  padding = 30;
   svgContainer;
 
   constructor() { }
@@ -22,22 +18,22 @@ export class ScatterPlotComponent implements OnInit {
   @Input() sensor: Sensor;
 
   ngOnInit() {
-    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', this.width)
-      .attr('height', this.height).style('border', '1px solid black');
+    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
+      .attr('height', height).style('border', '1px solid black');
     this.randomize();
     this.draw();
   }
 
   draw() {
     this.svgContainer.remove();
-    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', this.width)
-      .attr('height', this.height).style('border', '1px solid black');
+    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
+      .attr('height', height).style('border', '1px solid black');
     const xScale = d3.scaleLinear()
       .domain([0, d3.max(this.dataset, (d) => d[0])])
-      .range([this.margin.left, this.width - this.margin.right]);
+      .range(xRange);
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(this.dataset, (d) => d[1])])
-      .range([this.height - this.margin.bottom, this.margin.bottom]);
+      .range(yRange);
     const rScale = d3.scaleLinear().domain([0, d3.max(this.dataset, (d) => d[1])]).range([2, 5]);
     const xAxis = d3.axisBottom(xScale).ticks(5);
     const yAxis = d3.axisLeft(yScale);
@@ -60,11 +56,11 @@ export class ScatterPlotComponent implements OnInit {
     // Add Axis
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(0,' + (this.height - this.margin.bottom) + ')')
+      .attr('transform', 'translate(0,' + (height - margin.bottom) + ')')
       .call(xAxis);
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(' + this.margin.left  + ', 0)')
+      .attr('transform', 'translate(' + margin.left  + ', 0)')
       .call(yAxis);
 
   }
@@ -77,11 +73,11 @@ export class ScatterPlotComponent implements OnInit {
   randomize() {
     this.dataset = [];
     const numDataPoints = 50;
-    const xRange = Math.random() * 1000;
-    const yRange = Math.random() * 1000;
+    const xValRange = Math.random() * 1000;
+    const yValRange = Math.random() * 1000;
     for (let i = 0; i < numDataPoints; i++) {
-      const newNum1 = Math.round(Math.random() * xRange);
-      const newNum2 = Math.round(Math.random() * yRange);
+      const newNum1 = Math.round(Math.random() * xValRange);
+      const newNum2 = Math.round(Math.random() * yValRange);
       this.dataset.push([newNum1, newNum2]);
     }
   }

@@ -3,7 +3,6 @@ import * as d3 from 'd3';
 import {TunnelNetwork} from '../models/tunnel-network';
 import {Router} from '@angular/router';
 import {SensorsService} from '../sensors.service';
-import {text} from '@angular/core/src/render3/instructions';
 
 @Component({
   selector: 'app-tunnel-network',
@@ -13,7 +12,7 @@ import {text} from '@angular/core/src/render3/instructions';
 export class TunnelNetworkComponent implements OnInit {
 
   // svg dims
-  margin = {top: 30, right: 30, bottom: 50, left: 70};
+  margin = {top: 30, right: 40, bottom: 50, left: 70};
   width = 1000 - this.margin.left - this.margin.right;
   height = 700 - this.margin.top - this.margin.bottom;
 

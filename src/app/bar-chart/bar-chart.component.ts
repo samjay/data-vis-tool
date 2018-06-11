@@ -1,6 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
+import {height, margin, width} from '../common/svg-dimensions';
+import {xRange, yRange} from '../common/range';
 
 @Component({
   selector: 'app-bar-chart',
@@ -9,10 +11,6 @@ import {Sensor} from '../models/sensor';
 })
 export class BarChartComponent implements OnInit {
 
-  // set the dimensions and margins of the graph
-  margin = {top: 20, right: 20, bottom: 50, left: 70};
-  width = 960 - this.margin.left - this.margin.right;
-  height = 500 - this.margin.top - this.margin.bottom;
   barPadding = 1;
   readData;
   preparedData;
@@ -22,19 +20,14 @@ export class BarChartComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.svgContainer = d3.select('#barChart').append('svg')
-      .attr('width', this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height + this.margin.top + this.margin.bottom).style('border', '1px solid black')
-      .append('g')
-      .attr('transform',
-        'translate(' + this.margin.left + ',' + this.margin.top + ')');
+    this.svgContainer = d3.select('#barChart').append('svg').attr('width', width)
+      .attr('height', height).style('border', '1px solid black');
 
     d3.csv('assets/baseball_data.csv').then((data) => {
       this.readData = data;
       this.prepare();
       this.draw();
     });
-
   }
 
   prepare() {
@@ -45,52 +38,50 @@ export class BarChartComponent implements OnInit {
   }
 
   draw() {
-    // const chartWidth = this.width - this.containerPadding;
-    // const chartHeight = this.height - this.bottomPadding - this.bottomAxisPadding;
-
     // create bins
     const xScale = d3.scaleOrdinal()
       .domain([d3.min(this.preparedData), d3.max(this.preparedData)])
-      .range([0, this.width]);
+      .range(xRange);
     const histogram = d3.histogram()
       .domain(xScale.domain());
     const bins = histogram(this.preparedData);
 
     // y Scale
     const maxData = d3.max(bins, (d) => d.length);
-    const yScale = d3.scaleLinear().domain([0, maxData]).range([0, this.height]);
+    const yScale = d3.scaleLinear().domain([0, maxData]).range(yRange);
 
     // draw Bars
+
+    const barWidth = (width - margin.left - margin.right);
     this.svgContainer.selectAll('rect').data(bins).enter()
       .append('rect')
-      .attr('x', (d, i) => i * this.width / bins.length)
-      .attr('y', (d) => this.height - yScale(d.length))
-      .attr('width', this.width / bins.length - this.barPadding)
-      .attr('height', (d) => yScale(d.length))
+      .attr('x', (d, i) => (i * (barWidth) / bins.length) + margin.left)
+      .attr('y', (d) => yScale(d.length) - margin.top)
+      .attr('width', (barWidth) / bins.length - this.barPadding)
+      .attr('height', (d) => height - yScale(d.length) - margin.top)
       .attr('fill', (d) => 'rgb(20, ' + (255 - (d.length)) + ',' + (255 - (d.length)) + ')');
 
     // x Axis
     const xAxisScale = d3.scaleLinear()
       .domain([d3.min(bins, (d) => d.x0), d3.max(bins, (d) => d.x1)])
-      .range([0, this.width]);
+      .range(xRange);
     const xAxis = d3.axisBottom(xAxisScale).ticks(bins.length);
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(' + 0 + ',' + (this.height) + ')')
+      .attr('transform', 'translate(' + 0 + ',' + (height - margin.top - 20) + ')')
       .call(xAxis);
     this.svgContainer.append('text')
       .attr('transform',
-        'translate(' + (this.width / 2) + ' ,' +
-        (this.height + this.margin.top + 20) + ')')
+        'translate(' + (width / 2) + ' ,' +
+        (height + margin.top + 20) + ')')
       .style('text-anchor', 'middle')
       .text('Heights');
 
     // y Axis
-    const yAxisScale = d3.scaleLinear().domain([0, maxData]).range([this.height, 0]);
-    const yAxis = d3.axisLeft(yAxisScale);
+    const yAxis = d3.axisLeft(yScale);
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(' + 0  + ', ' + 0 + ')')
+      .attr('transform', 'translate(' + margin.left  + ', ' + (margin.top - 10) + ')')
       .call(yAxis);
   }
     // // Bar labels
