@@ -19,8 +19,8 @@ export class ChartComponent implements OnInit {
   padding = 25;
   svgContainer;
   parseDate;
-  fromDateDispC;
-  toDateDispC;
+  fromDateDisp;
+  toDateDisp;
 
   constructor(private dateFilterService: DateFilterService,
               private dataService: DataFileService) { }
@@ -108,8 +108,8 @@ export class ChartComponent implements OnInit {
   }
 
   onDateRangeChange(dateRange: any) {
-    this.toDateDispC = dateRange.to;
-    this.fromDateDispC = dateRange.from;
+    this.toDateDisp = dateRange.to;
+    this.fromDateDisp = dateRange.from;
     this.prepare(false, dateRange.from, dateRange.to);
     this.draw();
   }

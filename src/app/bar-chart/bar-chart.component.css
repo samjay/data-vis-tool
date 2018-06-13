@@ -4,3 +4,9 @@ div.bar {
   height: 75px;
   background-color: teal;
 }
+
+* >>> .grid .tick {
+  stroke: black;
+  stroke-width: 0.2px;
+  opacity: 5;
+}
