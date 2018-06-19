@@ -1,3 +1,7 @@
-mat-slider {
-  width: 300px;
+.date-limits{
+  font: 12px Verdana;
+  font-weight: bold;
+}
+.date-tip{
+  font: 9px Verdana;
 }

@@ -1,11 +1,13 @@
-<div style="width: 900px">
-  <nouislider style="width: 800px; margin-left: 40px"
+<div style="width: 900px; margin-left: 30px; background: lightblue">
+  <nouislider style="width: 800px; margin-left: 40px; padding-top: 50px"
               [connect]="true" [min]="1" [max]="maxNum" [step]="1"
               [(ngModel)]="dateRange" [tooltips]="[true, true]" [format]="toolTipFormat"
               (ngModelChange)="onChange($event)"></nouislider>
-  <br/>
-  <span>{{fromDateDisp}}</span>
-  <span style="float: right">{{toDateDisp}}</span>
+  <div>
+    <span class="date-limits">{{fromDateDisp}}</span>
+    <span class="date-limits" style="float: right">{{toDateDisp}}</span>
+  </div>
+
 </div>
 
 

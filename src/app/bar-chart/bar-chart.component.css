@@ -10,3 +10,24 @@ div.bar {
   stroke-width: 0.2px;
   opacity: 5;
 }
+
+* >>> .axis {
+  font: 10px sans-serif;
+}
+
+* >>> .axis path,
+* >>> .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+* >>> .mouseTooltip {
+  font: 12px "Verdana";
+}
+* >>> .mouseTooltip path,
+* >>> .mouseTooltip line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}

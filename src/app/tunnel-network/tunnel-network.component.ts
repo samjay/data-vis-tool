@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import {TunnelNetwork} from '../models/tunnel-network';
 import {Router} from '@angular/router';
 import {SensorsService} from '../sensors.service';
+import {COLORS} from '../models/colors';
 
 @Component({
   selector: 'app-tunnel-network',
@@ -28,8 +29,7 @@ export class TunnelNetworkComponent implements OnInit {
   ngOnInit() {
     this.svgContainer = d3.select('#tunnelNetChart').append('svg')
       .attr('width',  this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height + this.margin.top + this.margin.bottom)
-      .style('border', '1px solid black');
+      .attr('height', this.height + this.margin.top + this.margin.bottom);
 
     this.sensorService.getTunnerlNetwork().subscribe(tunnelNetwork => this.tunnelNet = tunnelNetwork);
 
@@ -43,19 +43,19 @@ export class TunnelNetworkComponent implements OnInit {
         d3.max(this.tunnelNet.locations, (location) => location.y)])
       .range([this.margin.top, this.height]);
 
-    const lineFunction = d3.line().x(d => this.xScale(d.x)).y(d => this.yScale(d.y));
+    const lineFunction = d3.line().x(d => this.xScale(d.x)).y(d => this.yScale(d.y)).curve(d3.curveLinear);
 
     this.svgContainer.selectAll('path').data(this.tunnelNet.tunnels).enter()
       .append('path').attr('d', (d) => lineFunction(d.locations))
-      .attr('stroke', d3.rgb( Math.random() * 255, Math.random() * 255, Math.random() * 255 ))
-      .attr('stroke-width', 7).attr('fill', 'none');
+      .attr('stroke', (d, i) => COLORS[i])
+      .attr('stroke-width', 10).attr('fill', 'none');
 
     this.stopAnimation = false;
     this.svgContainer.selectAll('circle').data(this.tunnelNet.locations).enter().each((d, i) => this.showWarning(d))
       .append('circle').attr('cx', (d) => this.xScale(d.x))
       .attr('cy', (d) => this.yScale(d.y))
       .attr('r', 15)
-      .attr('fill', d3.rgb( Math.random() * 255, Math.random() * 255, Math.random() * 255 ))
+      .attr('fill', 'white').attr('stroke', 'black').attr('stroke-width', 4)
       .on('mouseover', (d, i, elem) => this.showDetails(d, i, elem))
       .on('mouseout', (d, i, elem) => this.hideDetails(d, i, elem))
       .on('click', (d, i) => this.goToSensorLocation(d));
@@ -71,34 +71,36 @@ export class TunnelNetworkComponent implements OnInit {
       .attr('x', () => this.xScale(d.x) + 30)
       .attr('y', () => this.yScale(d.y) - 25)
       .attr('width', 1)
-      .attr('height', 5).attr('fill', d3.rgb( 163, 187, 224))
+      .attr('height', 5).attr('fill', 'darkblue')
       .transition().duration(500)
-      .attr('width', 80).attr('height', 40);
+      .attr('width', 85).attr('height', 20);
 
     this.svgContainer.append('text').attr('id', 't1' + d.x + '-' + d.y + '-' + i)
       .attr('x', () => this.xScale(d.x) + 33)
-      .attr('y', () => this.yScale(d.y) - 10).attr('font-size', 13).attr('fill-opacity', 0.1)
-      .text('location: ' + d.id)
-      .transition().delay(100).duration(500)
+      .attr('y', () => this.yScale(d.y) - 10)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text('Location: ' + d.id)
+      .transition().delay(200).duration(500)
       .attr('fill-opacity', 1);
-    this.svgContainer.append('text').attr('id', 't2' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.xScale(d.x) + 33)
-      .attr('y', () => this.yScale(d.y) + 6).attr('font-size', 13).attr('fill-opacity', 0.1)
-      .attr('fill', () => {
-        if (d.status_ok) {
-          return 'green';
-        } else {
-          return 'red';
-        }
-      })
-      .text(() => {
-        if (d.status_ok) {
-          return 'status OK';
-        } else {
-          return 'status WARN';
-        }
-      }).transition().delay(100).duration(500)
-      .attr('fill-opacity', 1);
+
+    // this.svgContainer.append('text').attr('id', 't2' + d.x + '-' + d.y + '-' + i)
+    //   .attr('x', () => this.xScale(d.x) + 33)
+    //   .attr('y', () => this.yScale(d.y) + 6).attr('font-size', 13).attr('fill-opacity', 0.1)
+    //   .attr('fill', () => {
+    //     if (d.status_ok) {
+    //       return 'green';
+    //     } else {
+    //       return 'red';
+    //     }
+    //   })
+    //   .text(() => {
+    //     if (d.status_ok) {
+    //       return 'status OK';
+    //     } else {
+    //       return 'status WARN';
+    //     }
+    //   }).transition().delay(100).duration(500)
+    //   .attr('fill-opacity', 1);
 
   }
 

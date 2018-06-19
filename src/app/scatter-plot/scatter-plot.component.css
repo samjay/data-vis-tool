@@ -12,3 +12,13 @@ https://stackoverflow.com/questions/36214546/styles-in-component-for-d3-js-do-no
   font-family: sans-serif;
   font-size: 11px;
 }
+
+* >>> .mouseTooltip {
+  font: 12px "Verdana";
+}
+* >>> .mouseTooltip path,
+* >>> .mouseTooltip line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
