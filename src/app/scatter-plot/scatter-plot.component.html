@@ -2,4 +2,4 @@
   <h5 class="h5">{{sensor.name}}</h5>
 </div>
 <div id="scatterPlot"></div>
-<button class="btn btn-primary" (click)="randomizeAndDraw()">Temp randomize button</button>
+<app-date-slider [single]="true" *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>

@@ -2,7 +2,7 @@
   <h5 class="h5">{{sensor.name}}</h5>
 </div>
 <div id="lineChart"></div>
-<app-date-slider *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
+<app-date-slider [single]="false" *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
 
 
 

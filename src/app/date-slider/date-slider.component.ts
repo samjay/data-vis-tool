@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import {Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
 
@@ -18,7 +18,9 @@ export class DateSliderComponent implements OnInit {
   valFrom;
   valTo;
   dateRange = [3, 5];
+  singleDate = 1;
   toolTipFormat;
+  @Input () single: boolean;
   @Output() dateFilterChange = new EventEmitter<any>();
 
   constructor(private dateFilterService: DateFilterService) { }
@@ -56,7 +58,11 @@ export class DateSliderComponent implements OnInit {
   }
 
   onChange( value: any) {
-    this.dateFilterChange.emit({'from': value[0], 'to': value[1]});
+    if (this.single) {
+      this.dateFilterChange.emit({'from': value});
+    } else {
+      this.dateFilterChange.emit({'from': value[0], 'to': value[1]});
+    }
   }
 
 }
