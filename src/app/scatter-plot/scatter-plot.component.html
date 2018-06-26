@@ -1,5 +1,6 @@
 <div *ngIf="sensor">
-  <h5 class="h5">{{sensor.name}}</h5>
+  <h4 class="h4">{{sensor.name}}</h4>
+  <h6 class="h6">Showing data of 7 dates from {{selectedDate}}</h6>
 </div>
 <div id="scatterPlot"></div>
 <app-date-slider [single]="true" *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>

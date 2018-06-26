@@ -1,0 +1,19 @@
+* >>> .axis {
+  font: 10px Verdana;
+  font-style: oblique;
+}
+* >>> .axis path,
+* >>> .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+* >>> .mouseTooltip {
+  font: 12px "Verdana";
+}
+* >>> .mouseTooltip path,
+* >>> .mouseTooltip line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
