@@ -26,9 +26,10 @@ export class TunnelNetworkComponent implements OnInit {
       .attr('width',  width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
 
-    this.sensorService.getTunnerlNetwork().subscribe(tunnelNetwork => this.tunnelNet = tunnelNetwork);
-
-    this.draw();
+    this.sensorService.getTunnelNetwork().subscribe(tunnelNetwork => {
+      this.tunnelNet = tunnelNetwork;
+      this.draw();
+    });
   }
 
   draw() {

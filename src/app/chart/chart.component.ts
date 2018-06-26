@@ -116,6 +116,4 @@ export class ChartComponent implements OnInit {
     this.filter();
     this.draw();
   }
-
-
 }
