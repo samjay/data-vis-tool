@@ -1,9 +1,8 @@
 import {Chart} from './chart';
 
 export class Sensor {
-  id: number;
+  id: string;
   name: string;
   chart: Chart;
-  data_key: string;
   status_ok: boolean;
 }

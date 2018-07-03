@@ -10,13 +10,13 @@
     <div class="col-9">
       <div *ngIf="chart">
         <div *ngIf="chart.id === 1">
-          <app-bar-chart [sensor]="selectedSensor"></app-bar-chart>
+          <app-bar-chart [sensor]="selectedSensor" [location]="location"></app-bar-chart>
         </div>
         <div *ngIf="chart.id === 2">
-          <app-chart [sensor]="selectedSensor"></app-chart>
+          <app-chart [sensor]="selectedSensor" [location]="location"></app-chart>
         </div>
         <div *ngIf="chart.id === 3">
-          <app-scatter-plot [sensor]="selectedSensor"></app-scatter-plot>
+          <app-scatter-plot [sensor]="selectedSensor" [location]="location"></app-scatter-plot>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { Sensor } from '../models/sensor';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
@@ -7,13 +7,15 @@ import {height, margin, width} from '../common/svg-dimensions';
 import {xRange, yRange} from '../common/range';
 import {ChartService} from '../chart.service';
 import {parseDate, parseDateSource} from '../common/dateFormats';
+import {SensorLocation} from '../models/sensor-location';
+import {SensorsService} from '../sensors.service';
 
 @Component({
   selector: 'app-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.css']
 })
-export class ChartComponent implements OnInit {
+export class ChartComponent implements OnChanges {
 
   readData = [];
   preparedData = [];
@@ -26,20 +28,28 @@ export class ChartComponent implements OnInit {
   toDate;
 
   constructor(private dateFilterService: DateFilterService,
-              private dataService: DataFileService,
+              private sensorService: SensorsService,
               private chartService: ChartService) { }
 
   @Input() sensor: Sensor;
+  @Input() location: SensorLocation;
 
-  ngOnInit() {
+  ngOnChanges() {
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
     this.svgContainer = d3.select('#lineChart').append('svg').attr('width', width)
       .attr('height', height);
     this.getData();
   }
 
   getData() {
-    this.dataService.getReadData().subscribe( dataFromService => {
-      this.readData = dataFromService;
+    // temp adjustment to cycle through locations
+    if (this.location.id > 3) {
+      this.location.id = (this.location.id % 3) + 1;
+    }
+    this.sensorService.getSensorData(this.location.id + '' + this.sensor.id).subscribe( sensorData => {
+      this.readData = sensorData.data;
       if (this.readData.length > 0) {
         this.prepare();
         this.filter();
@@ -52,9 +62,7 @@ export class ChartComponent implements OnInit {
     this.preparedData = [];
 
     this.readData.forEach((d) => {
-      if (d.SITE_ID === this.sensor.data_key) {
-        this.preparedData.push({'date': parseDateSource(d.DATEOFF), 'y': d.SO4_CONC});
-      }
+      this.preparedData.push({'date': parseDateSource(d.timeStamp), 'y': d.x});
     });
     this.fromDate = this.preparedData[0].date;
     this.toDate = this.preparedData[this.preparedData.length - 1].date;

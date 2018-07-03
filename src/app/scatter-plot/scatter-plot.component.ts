@@ -1,19 +1,20 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
 import {height, margin, width} from '../common/svg-dimensions';
 import {xRange, yRange} from '../common/range';
-import {DataFileService} from '../data-file.service';
 import {DateFilterService} from '../date-filter.service';
 import {ChartService} from '../chart.service';
 import {parseDate, parseDateSource} from '../common/dateFormats';
+import {SensorLocation} from '../models/sensor-location';
+import {SensorsService} from '../sensors.service';
 
 @Component({
   selector: 'app-scatter-plot',
   templateUrl: './scatter-plot.component.html',
   styleUrls: ['./scatter-plot.component.css']
 })
-export class ScatterPlotComponent implements OnInit {
+export class ScatterPlotComponent implements OnChanges {
   readData = [];
   preparedData = [];
   filteredData = [];
@@ -26,21 +27,29 @@ export class ScatterPlotComponent implements OnInit {
   prepared;
   selectedDate;
 
-  constructor(private dataService: DataFileService,
-              private dateFilterService: DateFilterService,
+  constructor(private dateFilterService: DateFilterService,
+              private sensorService: SensorsService,
               private chartService: ChartService) { }
 
   @Input() sensor: Sensor;
+  @Input() location: SensorLocation;
 
-  ngOnInit() {
+  ngOnChanges() {
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
     this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
       .attr('height', height).style('border', '1px solid black');
     this.getData();
   }
 
   getData() {
-    this.dataService.getReadData().subscribe( dataFromService => {
-      this.readData = dataFromService;
+    // temp adjustment to cycle through locations
+    if (this.location.id > 3) {
+      this.location.id = (this.location.id % 3) + 1;
+    }
+    this.sensorService.getSensorData(this.location.id + '' + this.sensor.id).subscribe( sensorData => {
+      this.readData = sensorData.data;
       if (this.readData.length > 0) {
         this.prepare();
         this.filter();
@@ -52,7 +61,7 @@ export class ScatterPlotComponent implements OnInit {
   prepare() {
     this.preparedData = [];
     this.readData.forEach((d) => {
-      this.preparedData.push({'x': d.SO4_CONC, 'y': d.NO3_CONC, 'date': parseDateSource(d.DATEOFF)});
+      this.preparedData.push({'x': d.x, 'y': d.y, 'date': parseDateSource(d.timeStamp)});
     });
     this.dateFilterService.lowerDate = this.preparedData[0].date;
     this.dateFilterService.upperDate = this.preparedData[this.preparedData.length - 1].date;
@@ -61,13 +70,13 @@ export class ScatterPlotComponent implements OnInit {
 
   filter() {
     // will show data within week of selected date
-    const daysAfter7 = new Date();
+    const daysAfter30 = new Date();
     if (!this.selectedDate) {
       this.selectedDate = this.preparedData[0].date;
     }
-    daysAfter7.setTime(this.selectedDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+    daysAfter30.setTime(this.selectedDate.getTime() + (30 * 24 * 60 * 60 * 1000));
     this.filteredData = this.preparedData.filter((d) =>
-      d.date >= this.selectedDate && d.date <= daysAfter7);
+      d.date >= this.selectedDate && d.date <= daysAfter30);
   }
 
   draw() {
@@ -108,7 +117,7 @@ export class ScatterPlotComponent implements OnInit {
         'translate(' + (width / 2) + ' ,' +
         (height - margin.bottom + margin.top) + ')')
       .style('text-anchor', 'middle')
-      .text('Heights');
+      .text(this.sensor.name);
     this.svgContainer.append('g')
       .attr('class', 'axis')
       .attr('transform', 'translate(' + margin.left  + ', 0)')

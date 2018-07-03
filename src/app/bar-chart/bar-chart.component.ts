@@ -1,16 +1,18 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
 import {height, margin, width} from '../common/svg-dimensions';
 import {xRange} from '../common/range';
 import {ChartService} from '../chart.service';
+import {SensorLocation} from '../models/sensor-location';
+import {SensorsService} from '../sensors.service';
 
 @Component({
   selector: 'app-bar-chart',
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.css']
 })
-export class BarChartComponent implements OnInit {
+export class BarChartComponent implements OnChanges {
 
   readData;
   preparedData;
@@ -21,11 +23,18 @@ export class BarChartComponent implements OnInit {
   barPadding = 1;
 
   @Input() sensor: Sensor;
-  constructor(private chartService: ChartService) { }
+  @Input() location: SensorLocation;
 
-  ngOnInit() {
+  constructor(private chartService: ChartService,
+              private sensorService: SensorsService) { }
+
+  ngOnChanges() {
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
     this.svgContainer = d3.select('#barChart').append('svg').attr('width', width)
       .attr('height', height);
+    this.getData();
 
     // read data (this needs to be passed from sensor list, which location, which sensor id)
     d3.csv('assets/baseball_data.csv').then((data) => {
@@ -35,10 +44,24 @@ export class BarChartComponent implements OnInit {
     });
   }
 
+  getData() {
+    // temp adjustment to cycle through locations
+    if (this.location.id > 3) {
+      this.location.id = (this.location.id % 3) + 1;
+    }
+    this.sensorService.getSensorData(this.location.id + '' + this.sensor.id).subscribe( sensorData => {
+      this.readData = sensorData.data;
+      if (this.readData.length > 0) {
+        this.prepare();
+        this.draw();
+      }
+    });
+  }
+
   prepare() {
     this.preparedData = [];
     for (let i = 0; i < this.readData.length; i++) {
-      this.preparedData.push(this.readData[i].height);
+      this.preparedData.push(this.readData[i].x);
     }
   }
 
@@ -84,7 +107,7 @@ export class BarChartComponent implements OnInit {
         'translate(' + (width / 2) + ' ,' +
         (height - margin.bottom + margin.top) + ')')
       .style('text-anchor', 'middle')
-      .text('Temperature' +
+      .text( this.sensor.name +
         ' ');
 
     // y Axis

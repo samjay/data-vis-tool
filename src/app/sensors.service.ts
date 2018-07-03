@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import {Sensor} from './models/sensor';
-import {SENSORS} from './sensor-list/sensors-list';
 import {Observable, of} from 'rxjs/index';
 import {TunnelNetwork} from './models/tunnel-network';
 import {HttpClient} from '@angular/common/http';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import {SensorLocation} from './models/sensor-location';
 
 @Injectable({
@@ -14,6 +12,7 @@ export class SensorsService {
 
   private tunnelNetUrl = '/api/tunnelNet'; // URL to web API
   private locationURL = '/api/locations';
+  private sensorURL = '/api/sensorData';
   constructor(private http: HttpClient) { }
 
   getLocation(locationId: number): Observable<SensorLocation> {
@@ -28,6 +27,13 @@ export class SensorsService {
       .pipe(
         catchError(this.handleError('getTunnelNet'))
       );
+  }
+
+  getSensorData(sensorKey: string): Observable<any> {
+    const url = `${this.sensorURL}/${sensorKey}`;
+    return this.http.get<any>(url).pipe(
+      catchError(this.handleError<any>(`getSensorsdata from sensor=${sensorKey}`))
+    );
   }
 
   /**
