@@ -17,6 +17,7 @@ import {NouisliderModule} from 'ng2-nouislider';
 import { TunnelNetworkComponent } from './tunnel-network/tunnel-network.component';
 import {HttpClientInMemoryWebApiModule} from 'angular-in-memory-web-api';
 import {InMemoryDataService} from './in-memory-data.service';
+import { SensorNetworkComponent } from './sensor-network/sensor-network.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import {InMemoryDataService} from './in-memory-data.service';
     BarChartComponent,
     ScatterPlotComponent,
     DateSliderComponent,
-    TunnelNetworkComponent
+    TunnelNetworkComponent,
+    SensorNetworkComponent
   ],
   imports: [
     BrowserModule,

@@ -26,11 +26,19 @@ export class SensorListComponent implements OnInit {
     this.dataFileService.readFileData();
   }
 
+  /**
+   * show the relevant chart component according to the selected sensor
+   * @param {Sensor} sensor
+   */
   showChart(sensor: Sensor) {
     this.selectedSensor = sensor;
     this.chart = this.selectedSensor.chart;
   }
 
+  /**
+   * load the list of sensors for this location
+   * @param {number} id
+   */
   getSensors(id: number): void {
     this.sensorService.getLocation(id).subscribe(location => {
       this.location = location;

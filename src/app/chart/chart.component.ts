@@ -1,10 +1,8 @@
-import { Component, OnInit, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Sensor } from '../models/sensor';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
-import {DataFileService} from '../data-file.service';
-import {height, margin, width} from '../common/svg-dimensions';
-import {xRange, yRange} from '../common/range';
+import {height, heightSmall, margin, width, widthSmall} from '../common/svg-dimensions';
 import {ChartService} from '../chart.service';
 import {parseDate, parseDateSource} from '../common/dateFormats';
 import {SensorLocation} from '../models/sensor-location';
@@ -15,7 +13,7 @@ import {SensorsService} from '../sensors.service';
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.css']
 })
-export class ChartComponent implements OnChanges {
+export class ChartComponent implements OnChanges, OnInit, OnDestroy {
 
   readData = [];
   preparedData = [];
@@ -26,6 +24,9 @@ export class ChartComponent implements OnChanges {
   toDateDisp;
   fromDate;
   toDate;
+  chartId;
+  dataReady = false;
+  realTimeId;
 
   constructor(private dateFilterService: DateFilterService,
               private sensorService: SensorsService,
@@ -33,18 +34,21 @@ export class ChartComponent implements OnChanges {
 
   @Input() sensor: Sensor;
   @Input() location: SensorLocation;
+  @Input() sizeSmall: boolean;
+
+  ngOnInit() {
+    if (this.sensor) {
+      this.chartId = 'lineChart' + this.sensor.id + Math.round(Math.random() * 10);
+    }
+    this.realTimeUpdate();
+  }
 
   ngOnChanges() {
-    if (this.svgContainer) {
-      this.svgContainer.remove();
-    }
-    this.svgContainer = d3.select('#lineChart').append('svg').attr('width', width)
-      .attr('height', height);
     this.getData();
   }
 
   getData() {
-    // temp adjustment to cycle through locations
+    // TODO temp adjustment to cycle through locations, for demo
     if (this.location.id > 3) {
       this.location.id = (this.location.id % 3) + 1;
     }
@@ -53,6 +57,7 @@ export class ChartComponent implements OnChanges {
       if (this.readData.length > 0) {
         this.prepare();
         this.filter();
+        this.dataReady = true;
         this.draw();
       }
     });
@@ -78,27 +83,42 @@ export class ChartComponent implements OnChanges {
   }
 
   draw() {
-    this.svgContainer.remove();
-    this.svgContainer = d3.select('#lineChart').append('svg').attr('width', width)
-      .attr('height', height);
+    let _width;
+    let _height;
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
+
+    if (this.sizeSmall) {
+        _width = widthSmall;
+        _height = heightSmall;
+    } else {
+      _width = width;
+      _height = height;
+    }
+    const _xRange = [margin.left, _width - margin.right];
+    const _yRange = [_height - margin.bottom, margin.bottom];
+
+    this.svgContainer = d3.select('#' + this.chartId).append('svg').attr('width', _width)
+      .attr('height', _height);
 
     // x-axis
     const xAxisScale = d3.scaleTime()
       .domain([this.filteredData[0].date, this.filteredData[this.filteredData.length - 1].date])
-      .rangeRound(xRange);
+      .rangeRound(_xRange);
     const xAxis = d3.axisBottom(xAxisScale).tickFormat(d3.timeFormat('%b %y')).ticks(15).tickPadding(2);
 
     // y-axis
     const yMax = d3.max(this.filteredData, (d) => d.y);
     const yScale = d3.scaleLinear()
       .domain([0, yMax])
-      .range(yRange);
+      .range(_yRange);
     const yAxis = d3.axisLeft(yScale);
 
     // Add Axis
     this.svgContainer.append('g')
       .attr('class', 'x axis')
-      .attr('transform', 'translate(0,' + (height - margin.bottom) + ')')
+      .attr('transform', 'translate(0,' + (_height - margin.bottom) + ')')
       .call(xAxis);
     this.svgContainer.append('g')
       .attr('class', 'y axis')
@@ -108,12 +128,18 @@ export class ChartComponent implements OnChanges {
     // Draw Line
     const xScale = d3.scaleTime()
       .domain(d3.extent(this.filteredData, (d) => d.date))
-      .range(xRange);
+      .range(_xRange);
     const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y));
     this.svgContainer.append('path').attr('d', lineFunction(this.filteredData)).attr('stroke', 'navy')
       .attr('stroke-width', 0.7).attr('fill', 'none');
 
-    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false, yScale, true);
+    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false, yScale, true, _height, _width);
+  }
+
+  realTimeUpdate() { // TODO polling service
+    this.realTimeId = window.setInterval(() => {
+     this.getData();
+    }, 4000);
   }
 
   onDateRangeChange(dateRange: any) {
@@ -123,5 +149,11 @@ export class ChartComponent implements OnChanges {
     this.toDate = parseDate(dateRange.to);
     this.filter();
     this.draw();
+  }
+
+  ngOnDestroy() {
+    if (this.realTimeId) {
+      window.clearInterval(this.realTimeId);
+    }
   }
 }

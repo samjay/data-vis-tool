@@ -1,6 +1,6 @@
-<div style="width: 900px; margin-left: 30px; background: lightblue">
+<div [class]="styleBack" style="background: lightblue">
   <div *ngIf="!single">
-  <nouislider style="width: 800px; margin-left: 40px; padding-top: 50px"
+  <nouislider [class]="style"
               [connect]="true" [min]="1" [max]="maxNum" [step]="1"
               [(ngModel)]="dateRange" [tooltips]="[true, true]" [format]="toolTipFormat"
               (ngModelChange)="onChange($event)"></nouislider>
@@ -10,7 +10,7 @@
   </div>
   </div>
   <div *ngIf="single">
-    <nouislider style="width: 800px; margin-left: 40px; padding-top: 50px"
+    <nouislider [class]="style"
                 [connect]="false" [min]="1" [max]="maxNum" [step]="1" [tooltips]="[true]" [format]="toolTipFormat"
                 [(ngModel)]="singleDate" (ngModelChange)="onChange($event)"></nouislider>
     <div>
@@ -18,7 +18,6 @@
       <span class="date-limits" style="float: right">{{toDateDisp}}</span>
     </div>
   </div>
-
 </div>
 
 

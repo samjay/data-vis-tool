@@ -45,7 +45,7 @@ export class BarChartComponent implements OnChanges {
   }
 
   getData() {
-    // temp adjustment to cycle through locations
+    // TODO temp adjustment to cycle through locations, for demo
     if (this.location.id > 3) {
       this.location.id = (this.location.id % 3) + 1;
     }
@@ -119,7 +119,7 @@ export class BarChartComponent implements OnChanges {
       .call(yAxis);
 
     // Add mouse position tooltip
-    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false,  yAxisScale, true);
+    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false,  yAxisScale, true, height, width);
   }
 
 }

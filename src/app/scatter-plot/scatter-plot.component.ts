@@ -34,6 +34,9 @@ export class ScatterPlotComponent implements OnChanges {
   @Input() sensor: Sensor;
   @Input() location: SensorLocation;
 
+  /**
+   * Load the component each time the selected sensor in the parent sensor-list component changes
+   */
   ngOnChanges() {
     if (this.svgContainer) {
       this.svgContainer.remove();
@@ -43,8 +46,11 @@ export class ScatterPlotComponent implements OnChanges {
     this.getData();
   }
 
+  /**
+   * Load the data
+   */
   getData() {
-    // temp adjustment to cycle through locations
+    // TODO temp adjustment to cycle through locations, for demo
     if (this.location.id > 3) {
       this.location.id = (this.location.id % 3) + 1;
     }
@@ -58,6 +64,9 @@ export class ScatterPlotComponent implements OnChanges {
     });
   }
 
+  /**
+   * Prepare the data
+   */
   prepare() {
     this.preparedData = [];
     this.readData.forEach((d) => {
@@ -68,6 +77,9 @@ export class ScatterPlotComponent implements OnChanges {
     this.prepared = true;
   }
 
+  /**
+   * Filter the data
+   */
   filter() {
     // will show data within week of selected date
     const daysAfter30 = new Date();
@@ -79,8 +91,10 @@ export class ScatterPlotComponent implements OnChanges {
       d.date >= this.selectedDate && d.date <= daysAfter30);
   }
 
+  /**
+   * Draw SVG
+   */
   draw() {
-
     this.svgContainer.remove();
     this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
       .attr('height', height).style('border', '1px solid black');
@@ -123,9 +137,13 @@ export class ScatterPlotComponent implements OnChanges {
       .attr('transform', 'translate(' + margin.left  + ', 0)')
       .call(yAxis);
 
-    this.chartService.addMouseCursorTracker(this.svgContainer, this.xAxisScale, true, this.yAxisScale, true);
+    this.chartService.addMouseCursorTracker(this.svgContainer, this.xAxisScale, true, this.yAxisScale, true, height, width);
   }
 
+  /**
+   * Event responder fired when the child date filter component date range is changed
+   * @param dateRange
+   */
   onDateRangeChange(dateRange: any) {
     this.selectedDate = parseDate(dateRange.from);
     this.filter();

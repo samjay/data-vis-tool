@@ -12,6 +12,9 @@ export class DataFileService {
 
   constructor() { }
 
+  /**
+   * Read the concentration csv file
+   */
   readFileData() {
     d3.csv('assets/Concentration - Weekly.csv').then((data) => {
       this.readData = data;
@@ -19,6 +22,10 @@ export class DataFileService {
     });
   }
 
+  /**
+   * load the read data
+   * @returns {Observable<any[]>}
+   */
   getReadData(): Observable<any[]> {
     if (!this.readData) {
       this.readFileData();

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as d3 from 'd3';
-import {height, margin, width} from './common/svg-dimensions';
+import {margin} from './common/svg-dimensions';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,15 @@ export class ChartService {
 
   constructor() { }
 
-  addMouseCursorTracker(svg, xScale, showX, yScale, showY) {
+  /**
+   * Common method to add the mouse tracker to the passed svg
+   * @param svg svg to add the mouse tracker
+   * @param xScale to reverse the mouse coordinates to values
+   * @param showX boolean to show the x value, not needed in case of date
+   * @param yScale to reverse the mouse coordinates to values
+   * @param showY boolean to show the y value
+   */
+  addMouseCursorTracker(svg, xScale, showX, yScale, showY, height, width) {
     svg.on('mousemove', (d, i, elem) => {
       d3.select('#txHMouse').remove();
       d3.select('#txVMouse').remove();

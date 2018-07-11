@@ -5,3 +5,27 @@
 .date-tip{
   font: 9px Verdana;
 }
+
+.size-normal{
+  width: 720px;
+  margin-left: 40px;
+  padding-top: 50px;
+}
+
+.size-normal-back{
+  width: 800px;
+  margin-left: 40px;
+  padding-top: 10px;
+}
+
+.size-small{
+  width: 370px;
+  margin-left: 40px;
+  padding-top: 50px;
+}
+
+.size-small-back{
+  width: 450px;
+  margin-left: 40px;
+  padding-top: 10px;
+}

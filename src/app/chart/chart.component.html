@@ -1,9 +1,14 @@
 <div *ngIf="sensor">
+  <div>
   <h5 class="h5">{{sensor.name}}</h5>
-  <h6 class="h6">Sensor key {{sensor.data_key}}</h6>
+  <h6 class="h6">Sensor key {{sensor.id}}</h6>
+  </div>
+  <div [id]="chartId"></div>
+  <div *ngIf="!sizeSmall"><app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall"
+                                           (dateFilterChange)="onDateRangeChange($event)"></app-date-slider></div>
 </div>
-<div id="lineChart"></div>
-<app-date-slider [single]="false" *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
+
+
 
 
 

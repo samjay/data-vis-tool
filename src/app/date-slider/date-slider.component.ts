@@ -17,10 +17,13 @@ export class DateSliderComponent implements OnInit {
   maxNum = 20;
   valFrom;
   valTo;
+  style;
+  styleBack;
   dateRange = [3, 5];
   singleDate = 1;
   toolTipFormat;
   @Input () single: boolean;
+  @Input () small: boolean;
   @Output() dateFilterChange = new EventEmitter<any>();
 
   constructor(private dateFilterService: DateFilterService) { }
@@ -30,6 +33,13 @@ export class DateSliderComponent implements OnInit {
     this.dateFilterService.getLowerDate().subscribe(lowerDate => this.fromDateObj = lowerDate);
     this.dateFilterService.getUpperDate().subscribe(upperDate => this.toDateObj = upperDate);
 
+    if (this.small) {
+      this.style = 'size-small';
+      this.styleBack = 'size-small-back';
+    } else {
+      this.style = 'size-normal';
+      this.styleBack = 'size-normal-back';
+    }
     // display min and max date
     this.formatDateShort = d3.timeFormat('%m/%d/%Y');
     this.fromDateDisp = this.formatDateShort(this.fromDateObj);
@@ -57,6 +67,10 @@ export class DateSliderComponent implements OnInit {
     };
   }
 
+  /**
+   * Event emiter to send value changes to listeners.
+   * @param value
+   */
   onChange( value: any) {
     if (this.single) {
       this.dateFilterChange.emit({'from': value});
