@@ -1,7 +1,7 @@
 <div *ngIf="sensor">
   <div>
   <h5 class="h5">{{sensor.name}}</h5>
-  <h6 class="h6">Sensor key {{sensor.id}}</h6>
+  <h6 class="h6">Sensor key {{sensor.id}} Location {{location.id}}</h6>
   </div>
   <div [id]="chartId"></div>
   <div *ngIf="!sizeSmall"><app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall"

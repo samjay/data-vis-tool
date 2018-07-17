@@ -2,7 +2,7 @@
   <h4 class="h4">Sensor List</h4>
   <div class="row">
     <div class="col-2">
-      <div class="btn-group-vertical" role="group" aria-label="Basic example">
+      <div class="btn-group-vertical" role="group">
         <button *ngFor="let sensor of sensors" type="button" class="btn btn-outline-info"
                 (click)="showChart(sensor)">{{sensor.name}}</button>
       </div>

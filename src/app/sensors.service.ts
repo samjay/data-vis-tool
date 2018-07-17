@@ -16,7 +16,7 @@ export class SensorsService {
   private tunnelNetUrl = '/api/tunnelNet'; // URL to web API
   private locationURL = '/api/locations';
   private sensorURL = '/api/sensorData';
-  private index = 60; // TODO temp index for emulating real time data
+  private index = 50; // TODO temp index for emulating real time data
 
 
   constructor(private http: HttpClient) { }
@@ -52,9 +52,14 @@ export class SensorsService {
     return this.http.get<any>(this.sensorURL)
       .pipe(
         tap(sensors => {
+          this.index++;
           sensors.forEach( sensor => {
             let fromIndex;
             if (this.index > 50) {
+              if (this.index > 200) {
+                this.index = 50;
+                fromIndex = 0;
+              }
               fromIndex =  this.index - 50;
             } else {
               fromIndex = 0;
@@ -77,12 +82,15 @@ export class SensorsService {
       tap(sensorObj => {
         let fromIndex;
         if (this.index > 50) {
+          if (this.index > 200) {
+            this.index = 50;
+            fromIndex = 0;
+          }
           fromIndex =  this.index - 50;
         } else {
           fromIndex = 0;
         }
         sensorObj.data = sensorObj.data.slice(fromIndex, this.index);
-        this.index++;
       }),
       catchError(this.handleError<any>(`getSensorsdata from sensor=${sensorKey}`))
     );

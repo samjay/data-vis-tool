@@ -18,6 +18,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   yScale;
   radialScale;
   lineWidthScale;
+  barLengthScale;
   circleColor;
   signalSensor = SENSORS[7];
   batterySensor = SENSORS[6];
@@ -27,17 +28,20 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   centerNode = {'x': 320, 'y': 450};
   sensorSource;
   currentSensorValues = [];
-
+  option1;
+  option2;
   animateID;
 
   constructor(private sensorService: SensorsService) { }
 
   ngOnInit() {
+    this.option1 = true;
+    this.option2 = false;
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
       this.sensorSource = sensorNodes;
       this.prepare();
-      this.draw2();
-      // this.animate();
+      this.draw();
+      this.animate();
     });
   }
 
@@ -53,8 +57,8 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
         return _sensor.id === i + 'H';
       });
       const currentVal = {'battery': 0, 'signal': 0, location: 0 };
-      currentVal.battery = batrsensor.data[batrsensor.data.length - 3].x;
-      currentVal.signal = sgnlsensor.data[sgnlsensor.data.length - 3].x;
+      currentVal.battery = batrsensor.data[batrsensor.data.length - 1].x;
+      currentVal.signal = sgnlsensor.data[sgnlsensor.data.length - 1].x;
       currentVal.location = i;
       this.currentSensorValues.push(currentVal);
     }
@@ -112,9 +116,9 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
         this.getyVal(this.radialScale(d.signal), (360 / this.currentSensorValues.length) * i))
       .attr('r', 15)
       .attr('fill', (d) => this.circleColor(d.battery)).attr('stroke', 'black').attr('stroke-width', 4)
-      .on('mouseover', (d, i) => this.showDetails(d, i))
+      .on('mouseover', (d, i) => this.showDetails(d, i, this.getxPos(i), this.getyPos(i)))
       .on('mouseout', (d, i) => this.hideDetails(d, i))
-      .on('click', (d, i) => this.showChart(d, i));
+      .on('click', (d, i) => this.showChart(d, this.getxPos(i), this.getyPos(i)));
 
     // add center node TODO show tooltip
     this.svgContainer.append('rect')
@@ -139,31 +143,35 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .domain([1, 700]) // TODO get domain from data
       .range([margin.top, height]);
 
+    this.barLengthScale = d3.scaleLinear() // TODO correct domain and range
+      .domain([0, 100])
+      .range([1, 350]);
+
+    this.circleColor = d3.scaleQuantize()
+      .domain([0, 100])
+      .range(rygColors);
+
     // draw lines
     this.svgContainer.selectAll('line').data(this.currentSensorValues).enter()
       .append('line')
       .attr('id', (d, i) => 'line' + i)
       .attr('x1', 100).attr('y1', height / 2)
       .attr('x2', 400)
-      .attr('y2', (d, i) => i * ( height / this.currentSensorValues.length) + 20 )
+      .attr('y2', (d, i) => i * ( height / this.currentSensorValues.length) + 50 )
       .style('stroke-width', 4)
-      .style('stroke', 'green');
+      .style('stroke', 'navy');
 
     // append circles for
     this.svgContainer.selectAll('circle').data(this.currentSensorValues).enter()
       .append('circle')
       .attr('id', (d, i) => 'circle' + i)
-      .attr('cx', (d, i) =>
-        this.xScale(this.centerNode.x) +
-        this.getxVal(this.radialScale(d.signal), (360 / this.currentSensorValues.length) * i))
-      .attr('cy', (d, i) =>
-        this.yScale(this.centerNode.y) -
-        this.getyVal(this.radialScale(d.signal), (360 / this.currentSensorValues.length) * i))
+      .attr('cx', 400)
+      .attr('cy', (d, i) => i * ( height / this.currentSensorValues.length) + 50)
       .attr('r', 15)
-      .attr('fill', (d) => this.circleColor(d.battery)).attr('stroke', 'black').attr('stroke-width', 4)
-      .on('mouseover', (d, i) => this.showDetails(d, i))
+      .attr('fill', 'white').attr('stroke', 'black').attr('stroke-width', 4)
+      .each((d, i) => this.showBars(d, i, 400,  i * ( height / this.currentSensorValues.length) + 50))
       .on('mouseout', (d, i) => this.hideDetails(d, i))
-      .on('click', (d, i) => this.showChart(d, i));
+      .on('click', (d, i) => this.showChart(d, 400, i * ( height / this.currentSensorValues.length) + 50));
 
     // add center node TODO show tooltip
     this.svgContainer.append('rect')
@@ -173,25 +181,49 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .attr('width', 45)
       .attr('fill', 'navy');
 
+    const axisScale = d3.scaleLinear().domain([0, 100]).range([485, 485 + this.barLengthScale(100)]);
+    // Add grid
+    this.svgContainer.append('g')
+      .attr('class', 'grid')
+      .attr('transform', 'translate(' + 0 + ', 25)')
+      .call(d3.axisTop(axisScale)
+        .tickSize( - height + 20 , 0, 0)
+      );
   }
 
   animateElements() {
     for (let i = 0; i < this.currentSensorValues.length; i++) {
-      const circle = d3.select('#circle' + i);
-      const line = d3.select('#line' + i);
-      circle
-        .transition().duration(1000)
-        .attr('cx', this.getxPos(i))
-        .attr('cy', this.getyPos(i))
-        .attr('fill', this.circleColor(this.currentSensorValues[i].battery));
+      if (this.option1) {
+        const circle = d3.select('#circle' + i);
+        const line = d3.select('#line' + i);
+        circle
+          .transition().duration(1000)
+          .attr('cx', this.getxPos(i))
+          .attr('cy', this.getyPos(i))
+          .attr('fill', this.circleColor(this.currentSensorValues[i].battery));
 
-    line.transition().duration(1000)
-        .attr('x1', this.xScale(this.centerNode.x)).attr('y1', this.yScale(this.centerNode.y))
-        .attr('x2', this.getxPos(i))
-        .attr('y2', this.getyPos(i))
-        .style('stroke', 'green').style('stroke-width', (d) => this.lineWidthScale(d.signal));
+        line.transition().duration(1000)
+          .attr('x1', this.xScale(this.centerNode.x)).attr('y1', this.yScale(this.centerNode.y))
+          .attr('x2', this.getxPos(i))
+          .attr('y2', this.getyPos(i))
+          .style('stroke-width', (d) => this.lineWidthScale(this.currentSensorValues[i].signal));
+      }
+
+      if (this.option2) {
+        const batBar = d3.select('#batBar' + i);
+        const sigBar = d3.select('#sigBar' + i);
+
+        batBar.transition().duration(1000)
+          .attr('width', this.barLengthScale(this.currentSensorValues[i].signal))
+          .attr('fill', this.circleColor(this.currentSensorValues[i].signal));
+        sigBar.transition().duration(1000)
+          .attr('width', this.barLengthScale(this.currentSensorValues[i].battery))
+          .attr('fill', this.circleColor(this.currentSensorValues[i].battery));
+      }
     }
   }
+
+
 
 
   getxVal(r, angle) {
@@ -237,12 +269,12 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
    * @param i index
    * @param elem html element
    */
-  showDetails(d, i) {
+  showDetails(d, i, x, y) {
 
     // Add background rectangle and animate
     this.svgContainer.append('rect').attr('id', 'r' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.getxPos(i) + 30)
-      .attr('y', () => this.getyPos(i) - 25)
+      .attr('x', () => x + 30)
+      .attr('y', () => y - 25)
       .attr('width', 1).attr('height', 5)
       .attr('fill', 'darkblue')
       .transition().duration(500)
@@ -250,14 +282,73 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
 
     // add text
     this.svgContainer.append('text').attr('id', 't1' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.getxPos(i) + 33)
-      .attr('y', () => this.getyPos(i) - 10)
+      .attr('x', () => x + 33)
+      .attr('y', () => y - 10)
       .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
       .text('Signal: ' + Math.round(this.currentSensorValues[i].signal)
         + ' | Battery: ' + Math.round(this.currentSensorValues[i].battery))
       .transition().delay(200).duration(500)
       .attr('fill-opacity', 1);
   }
+
+  showBars(d, i, x, y) {
+    this.svgContainer.append('rect').attr('id', 'sigBar' + i)
+      .attr('x', () => x + 85)
+      .attr('y', y - 20)
+      .attr('width', this.barLengthScale(this.currentSensorValues[i].signal))
+      .attr('height', 20)
+      .attr('fill', this.circleColor(this.currentSensorValues[i].signal))
+      .attr('stroke', 'black');
+
+    this.svgContainer.append('rect').attr('id', 'batBar' + i)
+      .attr('x', () => x + 85)
+      .attr('y', y + 2)
+      .attr('width', this.barLengthScale(this.currentSensorValues[i].battery))
+      .attr('height', 20)
+      .attr('fill', this.circleColor(this.currentSensorValues[i].battery))
+      .attr('stroke', 'black');
+
+    this.svgContainer.append('text').attr('id', 'sigText' + i)
+      .attr('x', () => x + 30)
+      .attr('y', () => y - 5)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'black')
+      .text('Signal')
+      .attr('fill-opacity', 1);
+
+    // add text
+    this.svgContainer.append('text').attr('id', 'batText' + i)
+      .attr('x', () => x + 30)
+      .attr('y', () => y + 17)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'black')
+      .text('Battery')
+      .attr('fill-opacity', 1);
+  }
+
+  /**
+   * seperate method because recursive internal function
+   * @param d datapoint
+   */
+  pulse(x, y) {
+    d3.select('#pulseCircle').remove();
+    const circle = this.svgContainer.append('circle')
+      .attr('id', 'pulseCircle')
+      .attr('cx', x)
+      .attr('cy', y)
+      .attr('r', 1)
+      .style('fill', 'green').attr('fill-opacity', 0.8);
+    repeat();
+    function repeat() {
+      circle
+        .transition().duration(1000)
+        .attr('r', 30)
+        .attr('fill-opacity', 0.4)
+        .transition().duration(10)
+        .attr('r', 1)
+        .attr('fill-opacity', 0.8)
+        .on('end', repeat);
+    }
+  }
+
 
   /**
    * hide details when mouse out of circle
@@ -271,7 +362,35 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
     d3.select('#r' + d.x + '-' + d.y + '-' + i).remove();
   }
 
-  showChart(d, i) {
+  showChart(d, x, y) {
     this.selectedLocation = {id: d.location, sensor_list: [], x: 0, y: 0, z: 0, status_ok: true};
+    for (let i = 0; i < 4; i++) {
+      const normalizedCircle = d3.select('#circle' + i);
+      normalizedCircle.transition()
+        .duration(100)
+        .attr('r', 15);
+    }
+    const circle = d3.select('#circle' + (d.location - 1));
+    circle.transition()
+      .duration(500)
+      .attr('r', 23);
+    if (this.option2) {
+      this.pulse(x, y);
+    }
+  }
+
+  switchOptions(num) {
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
+    if (num === 1) {
+      this.option1 = true;
+      this.option2 = false;
+      this.draw();
+    } else {
+      this.option1 = false;
+      this.option2 = true;
+      this.draw2();
+    }
   }
 }

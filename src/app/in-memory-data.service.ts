@@ -125,32 +125,32 @@ export class InMemoryDataService implements InMemoryDbService {
         sensor1tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
         sensor1humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
         sensor1presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor1btrData.push({'timeStamp': d.DATEOFF, 'x': d.CA_CONC * 100});
-        sensor1signalData.push({'timeStamp': d.DATEOFF, 'x': d.TNO3_CONC * 20});
+        sensor1btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
+        sensor1signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
         sensor1gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
       }
       if (d.SITE_ID === 'HWF187') {
         sensor2tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
         sensor2humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
         sensor2presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor2btrData.push({'timeStamp': d.DATEOFF, 'x': d.CA_CONC * 100});
-        sensor2signalData.push({'timeStamp': d.DATEOFF, 'x': d.TNO3_CONC * 20});
+        sensor2btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
+        sensor2signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
         sensor2gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
       }
       if (d.SITE_ID === 'BBE401') {
         sensor3tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
         sensor3humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
         sensor3presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor3btrData.push({'timeStamp': d.DATEOFF, 'x': d.CA_CONC * 100});
-        sensor3signalData.push({'timeStamp': d.DATEOFF, 'x': d.TNO3_CONC * 20});
+        sensor3btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
+        sensor3signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
         sensor3gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
       }
       if (d.SITE_ID === 'PIN414') {
         sensor4tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
         sensor4humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
         sensor4presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor4btrData.push({'timeStamp': d.DATEOFF, 'x': d.CA_CONC * 100});
-        sensor4signalData.push({'timeStamp': d.DATEOFF, 'x': d.TNO3_CONC * 20});
+        sensor4btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
+        sensor4signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
         sensor4gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
       }
     });
@@ -181,5 +181,12 @@ export class InMemoryDataService implements InMemoryDbService {
       {'id': '4E', 'data': sensor4gyroData},
       {'id': '4H', 'data': sensor4signalData}
     );
+  }
+
+  lessThanHundred(val) {
+    if (val > 100) {
+      val = 100;
+    }
+    return val;
   }
 }

@@ -49,8 +49,8 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
 
   getData() {
     // TODO temp adjustment to cycle through locations, for demo
-    if (this.location.id > 3) {
-      this.location.id = (this.location.id % 3) + 1;
+    if (this.location.id > 4) {
+      this.location.id = (this.location.id % 4) + 1;
     }
     this.sensorService.getSensorData(this.location.id + '' + this.sensor.id).subscribe( sensorData => {
       this.readData = sensorData.data;
