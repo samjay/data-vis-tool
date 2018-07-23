@@ -130,8 +130,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
       .domain(d3.extent(this.filteredData, (d) => d.date))
       .range(_xRange);
     const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y));
-    this.svgContainer.append('path').attr('d', lineFunction(this.filteredData)).attr('stroke', 'navy')
-      .attr('stroke-width', 0.7).attr('fill', 'none');
+    this.svgContainer.append('path').attr('class', 'chart').attr('d', lineFunction(this.filteredData));
 
     this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false, yScale, true, _height, _width);
   }

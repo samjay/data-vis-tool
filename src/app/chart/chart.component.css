@@ -3,3 +3,8 @@
   stroke-width: 0.2px;
   opacity: 5;
 }
+
+* >>> .chart {
+  stroke: navy;
+  stroke-width: 0.7;
+}

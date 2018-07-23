@@ -1,3 +1,14 @@
-<div id="tunnelNetChart" class="container" style="margin-top: 40px;">
+<div class="container-fluid" style="margin-top: 40px; margin-left: 100px">
   <h2 class="h2" style="margin-top: 40px;">Tunnel Network</h2>
+  <div class="row">
+    <div class="col-8">
+      <div id="tunnelNetChart">
+      </div>
+    </div>
+    <div class="col-2">
+      <select style="width: 150px" class="form-control" [(ngModel)]="selectedSensorType" (change)="typeSelected()">
+        <option *ngFor="let type of sensorTypes" [ngValue]="type.id">{{type.name}}</option>
+      </select>
+    </div>
+  </div>
 </div>
