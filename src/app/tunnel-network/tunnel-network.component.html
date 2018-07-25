@@ -6,9 +6,15 @@
       </div>
     </div>
     <div class="col-2">
-      <select style="width: 150px" class="form-control" [(ngModel)]="selectedSensorType" (change)="typeSelected()">
-        <option *ngFor="let type of sensorTypes" [ngValue]="type.id">{{type.name}}</option>
-      </select>
+      <div class="row">
+        <select style="width: 150px" class="form-control" [(ngModel)]="selectedSensorType" (change)="typeSelected()">
+          <option *ngFor="let type of sensorTypes" [ngValue]="type">{{type.name}}</option>
+        </select>
+      </div>
+      <div class="row">
+        <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
+      </div>
     </div>
   </div>
 </div>
+

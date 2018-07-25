@@ -2,13 +2,16 @@
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(1)">Option1</button>
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(2)">Option2</button>
 </div>
-<div class="container" style="margin-top: 40px;">
+<div class="container-fluid" style="margin-left: 100px; margin-top: 40px;">
   <h2 class="h2" style="margin-top: 40px;">Sensor Network</h2>
-  <div *ngIf="option1" class="row" style="height: 600px">
+  <div class="row" style="height: 600px">
+      <div class="col-7">
       <div id="sensorNetChart"></div>
-  </div>
-  <div *ngIf="option2" class="row" style="height: 600px">
-    <div id="sensorNetChart2"></div>
+      <div id="sensorNetChart2"></div>
+      </div>
+      <div class="col-3">
+        <app-scale-legend [color]="true" [min]="0" [max]="100"></app-scale-legend>
+      </div>
   </div>
   <div class="row">
     <div *ngIf="selectedLocation">

@@ -40,3 +40,12 @@ export const rygColors = [
   '#20FF00',
   '#10FF00'];
 
+export const sensorColors = [
+  {type: 'A', color: 'salmon'},
+  {type: 'B', color: 'aquamarine'},
+  {type: 'C', color: 'orchid'},
+  {type: 'G', color: 'seaGreen'},
+  {type: 'H', color: 'green'},
+  {type: 'I', color: 'chocolate'}
+];
+

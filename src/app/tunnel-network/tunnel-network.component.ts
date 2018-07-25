@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import {TunnelNetwork} from '../models/tunnel-network';
 import {Router} from '@angular/router';
 import {SensorsService} from '../sensors.service';
-import {COLORS} from '../models/colors';
+import {COLORS, rygColors, sensorColors} from '../models/colors';
 import {height, margin, width} from '../common/svg-dimensions';
 import {SENSORS} from '../sensor-list/sensors-list';
 
@@ -20,9 +20,12 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   xScale;
   yScale;
   dataOpacityScale;
+  dataColorScale;
+  minVal;
+  maxVal;
   animateID;
   sensorTypes = [SENSORS[0], SENSORS[1], SENSORS[2], SENSORS[8]]; // TODO sensors from service
-  selectedSensorType = this.sensorTypes[3].id;
+  selectedSensorType = this.sensorTypes[3];
 
   constructor(private router: Router,
               private sensorService: SensorsService) { }
@@ -45,9 +48,10 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
           d3.max(this.tunnelNet.locations, (location) => location.y)])
         .range([margin.top, height]);
 
-      this.dataOpacityScale = d3.scaleLinear().domain([0, 5]).range([0, 0.8]); // TODO domain from max
       this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
         this.sensorSource = sensorNodes;
+        this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
+        this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
         this.showData();
         this.animate();
         this.draw();
@@ -85,6 +89,13 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
    * @param elem html element
    */
   showDetails(d, i, elem) {
+    let locationId;
+    if (d.id > 4) {
+      locationId = (d.id % 4) + 1;
+    } else {
+      locationId = d.id;
+    }
+
     const circle = d3.select(elem[i]);
     // Make circle bigger
     circle.transition()
@@ -98,7 +109,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .attr('width', 1).attr('height', 5)
       .attr('fill', 'darkblue')
       .transition().duration(500)
-      .attr('width', 85).attr('height', 20);
+      .attr('width', 150).attr('height', 40);
 
     // add text
     this.svgContainer.append('text').attr('id', 't1' + d.x + '-' + d.y + '-' + i)
@@ -106,6 +117,15 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .attr('y', () => this.yScale(d.y) - 10)
       .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
       .text('Location: ' + d.id)
+      .attr('fill-opacity', 0)
+      .transition().delay(200).duration(500)
+      .attr('fill-opacity', 1);
+
+    this.svgContainer.append('text').attr('id', 'd' + d.x + '-' + d.y + '-' + i)
+      .attr('x', () => this.xScale(d.x) + 33)
+      .attr('y', () => this.yScale(d.y) + 10)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text(this.selectedSensorType.name + ': ' + this.getCurrentValueOfSelectedType(locationId))
       .attr('fill-opacity', 0)
       .transition().delay(200).duration(500)
       .attr('fill-opacity', 1);
@@ -123,6 +143,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .duration(100).attr('r', 15);
     d3.select('#t1' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#t2' + d.x + '-' + d.y + '-' + i).remove();
+    d3.select('#d' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#r' + d.x + '-' + d.y + '-' + i).remove();
   }
 
@@ -179,6 +200,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
       this.sensorSource = sensorNodes;
       this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
+      this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
       this.animateData();
     });
   }
@@ -191,39 +213,50 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .attr('id', (d) => 'dataCircle' + d.id)
       .attr('cx', (d) => this.xScale(d.x))
       .attr('cy', (d) => this.yScale(d.y))
-      .attr('r', 65)
-      .style('fill', 'lime')
-      .attr('fill-opacity', (d) => this.dataOpacity(d));
+      .attr('r', 70)
+      // Opacity data:
+      .style('fill', () => {
+        const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+        return sensorColorFilter[0].color;
+      })
+      .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
+      .attr('fill-opacity', (d) => this.dataOpacity(d))
+      .attr('stroke', 'black');
+    // Color data:
+      // .attr('fill', (d) => {
+      //   return this.dataColor(d);
+      // })
+      // .attr('fill-opacity', 0.4);
+
   }
 
   getDataDomainRange() {
     const filterdSensors = this.sensorSource.filter(
-      (sensorFilter) => sensorFilter.id.endsWith(this.selectedSensorType));
-    let minVal;
-    let maxVal;
+      (sensorFilter) => sensorFilter.id.endsWith(this.selectedSensorType.id));
+    this.minVal = 1;
+    this.maxVal = 1;
     let tempMin;
     let tempMax;
     filterdSensors.forEach((sensor) => {
       tempMin = d3.min(sensor.data, (d) => d.x);
-      if (minVal) {
-        if (tempMin < minVal) {
-          minVal = tempMin;
+      if (this.minVal) {
+        if (tempMin < this.minVal) {
+          this.minVal = tempMin;
         }
       } else {
-        minVal = tempMin;
+        this.minVal = tempMin;
       }
 
       tempMax = d3.max(sensor.data, (d) => d.x);
-      if (maxVal) {
-        if (tempMax > maxVal) {
-          maxVal = tempMax;
+      if (this.maxVal) {
+        if (tempMax > this.maxVal) {
+          this.maxVal = tempMax;
         }
       } else {
-        maxVal = tempMax;
+        this.maxVal = tempMax;
       }
     });
-    console.log(minVal + ', ' + maxVal);
-    return [minVal, maxVal];
+    return [this.minVal, this.maxVal];
   }
 
   animateData() {
@@ -231,7 +264,15 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       const dataCircle = d3.select('#dataCircle' + this.tunnelNet.locations[i].id);
       dataCircle.
       transition().duration(500)
+      // opacity data:
+        .style('fill', () => {
+          const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+          return sensorColorFilter[0].color;
+        })
+        .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
         .attr('fill-opacity', (d) => this.dataOpacity(d));
+      // Color data:
+        // .attr('fill', (d) => this.dataColor(d));
     }
   }
 
@@ -242,16 +283,31 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
     } else {
       locationId = d.id;
     }
+    return this.dataOpacityScale(this.getCurrentValueOfSelectedType(locationId));
+  }
 
+  getCurrentValueOfSelectedType(locationId) {
     const sensors = this.sensorSource.filter((sensorFilter) =>
-      sensorFilter.id === locationId + this.selectedSensorType);
+      sensorFilter.id === locationId + this.selectedSensorType.id);
     const dataSensor = sensors[0];
     if (dataSensor) {
       // console.log('loc val ' + d.id + ': ' + dataSensor.data[dataSensor.data.length - 1].x);
-      return this.dataOpacityScale(dataSensor.data[dataSensor.data.length - 1].x);
+      return dataSensor.data[dataSensor.data.length - 1].x;
     } else {
       return 0;
     }
+  }
+
+  dataColor(d) {
+    let locationId;
+    if (d.id > 4) {
+      locationId = (d.id % 4) + 1;
+    } else {
+      locationId = d.id;
+    }
+
+    return this.dataColorScale(this.getCurrentValueOfSelectedType(locationId));
+
   }
 
 

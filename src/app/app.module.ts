@@ -18,6 +18,7 @@ import { TunnelNetworkComponent } from './tunnel-network/tunnel-network.componen
 import {HttpClientInMemoryWebApiModule} from 'angular-in-memory-web-api';
 import {InMemoryDataService} from './in-memory-data.service';
 import { SensorNetworkComponent } from './sensor-network/sensor-network.component';
+import { ScaleLegendComponent } from './scale-legend/scale-legend.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { SensorNetworkComponent } from './sensor-network/sensor-network.componen
     ScatterPlotComponent,
     DateSliderComponent,
     TunnelNetworkComponent,
-    SensorNetworkComponent
+    SensorNetworkComponent,
+    ScaleLegendComponent
   ],
   imports: [
     BrowserModule,

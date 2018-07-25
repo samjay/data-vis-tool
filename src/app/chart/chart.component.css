@@ -7,4 +7,5 @@
 * >>> .chart {
   stroke: navy;
   stroke-width: 0.7;
+  fill: none;
 }
