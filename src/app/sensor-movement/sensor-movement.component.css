@@ -1,0 +1,5 @@
+* >>> .grid .tick {
+  stroke: green;
+  stroke-width: 0.4px;
+  opacity: 1;
+}

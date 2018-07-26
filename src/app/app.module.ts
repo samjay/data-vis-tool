@@ -19,6 +19,7 @@ import {HttpClientInMemoryWebApiModule} from 'angular-in-memory-web-api';
 import {InMemoryDataService} from './in-memory-data.service';
 import { SensorNetworkComponent } from './sensor-network/sensor-network.component';
 import { ScaleLegendComponent } from './scale-legend/scale-legend.component';
+import { SensorMovementComponent } from './sensor-movement/sensor-movement.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { ScaleLegendComponent } from './scale-legend/scale-legend.component';
     DateSliderComponent,
     TunnelNetworkComponent,
     SensorNetworkComponent,
-    ScaleLegendComponent
+    ScaleLegendComponent,
+    SensorMovementComponent
   ],
   imports: [
     BrowserModule,

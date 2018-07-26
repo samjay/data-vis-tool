@@ -41,12 +41,12 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       this.xScale = d3.scaleLinear()
         .domain([d3.min(this.tunnelNet.locations, (location) => location.x),
           d3.max(this.tunnelNet.locations, (location) => location.x)])
-        .range([margin.left, width]);
+        .range([margin.left + 50 , width]);
 
       this.yScale = d3.scaleLinear()
         .domain([d3.min(this.tunnelNet.locations, (location) => location.y),
           d3.max(this.tunnelNet.locations, (location) => location.y)])
-        .range([margin.top, height]);
+        .range([margin.top + 50, height]);
 
       this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
         this.sensorSource = sensorNodes;

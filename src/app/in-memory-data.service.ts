@@ -84,7 +84,9 @@ export class InMemoryDataService implements InMemoryDbService {
     const sensor1humData = [];
     const sensor1presData = [];
     const sensor1btrData = [];
+    const sensor1posData = [];
     const sensor1gyroData = [];
+    const sensor1accData = [];
     const sensor1signalData = [];
     const sensor1pplData = [];
 
@@ -92,7 +94,9 @@ export class InMemoryDataService implements InMemoryDbService {
     const sensor2humData = [];
     const sensor2presData = [];
     const sensor2btrData = [];
+    const sensor2posData = [];
     const sensor2gyroData = [];
+    const sensor2accData = [];
     const sensor2signalData = [];
     const sensor2pplData = [];
 
@@ -100,7 +104,9 @@ export class InMemoryDataService implements InMemoryDbService {
     const sensor3humData = [];
     const sensor3presData = [];
     const sensor3btrData = [];
+    const sensor3posData = [];
     const sensor3gyroData = [];
+    const sensor3accData = [];
     const sensor3signalData = [];
     const sensor3pplData = [];
 
@@ -108,7 +114,9 @@ export class InMemoryDataService implements InMemoryDbService {
     const sensor4humData = [];
     const sensor4presData = [];
     const sensor4btrData = [];
+    const sensor4posData = [];
     const sensor4gyroData = [];
+    const sensor4accData = [];
     const sensor4signalData = [];
     const sensor4pplData = [];
 
@@ -119,7 +127,11 @@ export class InMemoryDataService implements InMemoryDbService {
         sensor1presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
         sensor1btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
         sensor1signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor1posData.push({'timeStamp': d.DATEOFF,
+          'x': (Number(d.SO2_CONC) * 10) + 40, 'y': Number(d.SO4_CONC) + 40, 'z': Number(d.SO2_CONC)});
         sensor1gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
+        sensor1accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
+          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
         sensor1pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
       }
       if (d.SITE_ID === 'HWF187') {
@@ -128,6 +140,10 @@ export class InMemoryDataService implements InMemoryDbService {
         sensor2presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
         sensor2btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
         sensor2signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor2posData.push({'timeStamp': d.DATEOFF,
+          'x': Number(d.SO2_CONC) + 280, 'y': (Number(d.SO4_CONC) * 5) + 200, 'z': Number(d.SO2_CONC)});
+        sensor2accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
+          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
         sensor2gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
         sensor2pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
       }
@@ -137,6 +153,10 @@ export class InMemoryDataService implements InMemoryDbService {
         sensor3presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
         sensor3btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
         sensor3signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor3posData.push({'timeStamp': d.DATEOFF,
+          'x': (Number(d.SO2_CONC) * 10) + 100, 'y': (Number(d.SO4_CONC) * 10) + 450, 'z': Number(d.SO2_CONC)});
+        sensor3accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
+          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
         sensor3gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
         sensor3pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
       }
@@ -146,6 +166,10 @@ export class InMemoryDataService implements InMemoryDbService {
         sensor4presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
         sensor4btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
         sensor4signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor4posData.push({'timeStamp': d.DATEOFF,
+          'x': (Number(d.SO2_CONC) * 5) + 450, 'y': (Number(d.SO4_CONC) * 50) + 100, 'z': Number(d.SO2_CONC)});
+        sensor4accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
+          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
         sensor4gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
         sensor4pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
       }
@@ -155,32 +179,46 @@ export class InMemoryDataService implements InMemoryDbService {
       {'id': '1A', 'data': sensor1tempData},
       {'id': '1B', 'data': sensor1humData},
       {'id': '1C', 'data': sensor1presData},
+      {'id': '1D', 'data': sensor1posData},
       {'id': '1G', 'data': sensor1btrData},
       {'id': '1E', 'data': sensor1gyroData},
       {'id': '1I', 'data': sensor1pplData},
       {'id': '1H', 'data': sensor1signalData},
+      {'id': '1J', 'data': sensor1accData},
       {'id': '2A', 'data': sensor2tempData},
       {'id': '2B', 'data': sensor2humData},
       {'id': '2C', 'data': sensor2presData},
+      {'id': '2D', 'data': sensor2posData},
       {'id': '2G', 'data': sensor2btrData},
       {'id': '2E', 'data': sensor2gyroData},
       {'id': '2I', 'data': sensor2pplData},
       {'id': '2H', 'data': sensor2signalData},
+      {'id': '2J', 'data': sensor2accData},
       {'id': '3A', 'data': sensor3tempData},
       {'id': '3B', 'data': sensor3humData},
       {'id': '3C', 'data': sensor3presData},
+      {'id': '3D', 'data': sensor3posData},
       {'id': '3G', 'data': sensor3btrData},
       {'id': '3E', 'data': sensor3gyroData},
+      {'id': '3J', 'data': sensor3accData},
       {'id': '3I', 'data': sensor3pplData},
       {'id': '3H', 'data': sensor3signalData},
       {'id': '4A', 'data': sensor4tempData},
       {'id': '4B', 'data': sensor4humData},
       {'id': '4C', 'data': sensor4presData},
+      {'id': '4D', 'data': sensor4posData},
       {'id': '4G', 'data': sensor4btrData},
       {'id': '4E', 'data': sensor4gyroData},
+      {'id': '4J', 'data': sensor4accData},
       {'id': '4I', 'data': sensor4pplData},
       {'id': '4H', 'data': sensor4signalData}
     );
+  }
+
+  accelrometerAdjustment(val) {
+    const sign = (Math.random() < 0.5 ? -1 : 1);
+    const result = ((val * Math.random() * 10) + 12 ) % 15;
+    return sign * result;
   }
 
   lessThanHundred(val) {

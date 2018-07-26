@@ -16,15 +16,31 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   svgContainer;
   xScale;
   yScale;
+  /**
+   * radius scale for cicle position in star network
+   */
   radialScale;
+  /**
+   * width of signal line
+   */
   lineWidthScale;
+  /**
+   * Option 2 data bar length
+   */
   barLengthScale;
+  /**
+   * color of sensor location circle
+   */
   circleColor;
+
   signalSensor = SENSORS[7];
   batterySensor = SENSORS[6];
+  /**
+   * tunnel data;
+   */
   tunnel;
   selectedLocation: SensorLocation;
-  // TODO get centerNode and sensorNodes from data
+  // TODO get centerNode from data
   centerNode = {'x': 320, 'y': 450};
   sensorSource;
   currentSensorValues = [];
