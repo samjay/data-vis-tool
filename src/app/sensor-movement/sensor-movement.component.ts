@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as d3 from 'd3';
 import { margin } from '../common/svg-dimensions';
 import {SensorsService} from '../sensors.service';
+import {ChartService} from '../chart.service';
 
 @Component({
   selector: 'app-sensor-movement',
@@ -40,6 +41,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    */
   height = 700;
   width = 1400;
+  centerNode = {'x': 250, 'y': 250};
 
   constructor(private sensorService: SensorsService) { }
 
@@ -47,7 +49,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
 
     // TODO domain min and max
     this.xScale = d3.scaleLinear().domain([0, 500]).range([margin.left, this.width - margin.right]);
-    this.yScale = d3.scaleLinear().domain([0, 500]).range([margin.top, this.height - margin.bottom]);
+    this.yScale = d3.scaleLinear().domain([0, 500]).range([this.height - margin.bottom, margin.top]);
     // accelerometer values range from -16 to 16.
     this.lineLengthScale = d3.scaleLinear().domain([-16, 16]).range([-100, 100]);
 
@@ -74,21 +76,19 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     }
 
     this.svgContainer = d3.select('#sensorPosChart').append('svg').attr('width', this.width)
-      .attr('height', this.height).style('border', '1px solid black');
+      .attr('height', this.height);
 
     // Add grid
-    const latitudeScale = d3.scaleLinear().domain([0, 100]).range([0, this.width]);
-    const longitudeScale = d3.scaleLinear().domain([0, 100]).range([0, this.height]);
     this.svgContainer.append('g')
       .attr('class', 'grid')
-      .attr('transform', 'translate(' + 0 + ', 0)')
-      .call(d3.axisTop(latitudeScale)
-        .tickSize( - this.height , 0, 0)
+      .attr('transform', 'translate(' + 0 + ', ' + -40 + ')')
+      .call(d3.axisBottom(this.xScale)
+        .tickSize( this.height , 0, 0)
       );
     this.svgContainer.append('g')
       .attr('class', 'grid')
-      .attr('transform', 'translate(' + 0 + ', 0)')
-      .call(d3.axisLeft(longitudeScale)
+      .attr('transform', 'translate(' + 50 + ', 0)')
+      .call(d3.axisLeft(this.yScale)
         .tickSize( - this.width , 0, 0)
       );
 
@@ -128,6 +128,25 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('stroke-width', 2)
       .attr('stroke', 'blue');
 
+    // draw central connection lines
+    this.svgContainer.selectAll('.centralLine').data(this.positionData).enter()
+      .append('line')
+      .attr('id', (d) => 'centerLine' + d.id)
+      .attr('x1', this.xScale(this.centerNode.x))
+      .attr('y1', this.yScale(this.centerNode.y))
+      .attr('x2', (d) => this.xScale(d.data[d.data.length - 2].x))
+      .attr('y2', (d) => this.yScale(d.data[d.data.length - 2].y))
+      .attr('stroke', 'lightBlue')
+      .attr('stroke-width', '1');
+
+    // add center node TODO show tooltip
+    this.svgContainer.append('rect')
+      .attr('x', this.xScale(this.centerNode.x) - 20)
+      .attr('y', this.yScale(this.centerNode.y) - 22)
+      .attr('height', 40)
+      .attr('width', 45)
+      .attr('fill', 'navy');
+
   }
 
   /**
@@ -164,10 +183,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
 
       const line = d3.select('#sensorAccLine' + positionSensor.id);
       line.transition().duration(1000)
-        .attr('x1', () => {
-          return this.xScale(positionSensor.data[positionSensor.data.length - 2].x);
-        })
-        .attr('y1', () => this.yScale(positionSensor.data[positionSensor.data.length - 2].y))
+        .attr('x1', this.xScale(positionSensor.data[positionSensor.data.length - 2].x))
+        .attr('y1', this.yScale(positionSensor.data[positionSensor.data.length - 2].y))
         .attr('x2', () => {
           const accelerometer = this.accelerometerData
             .find( accel => accel.id.charAt(0) === (positionSensor.id.charAt(0)));
@@ -180,6 +197,11 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
           return this.yScale(positionSensor.data[positionSensor.data.length - 2].y) +
             this.lineLengthScale(accelerometer.data[accelerometer.data.length - 1].y);
         });
+
+      const centerLine = d3.select('#centerLine' + positionSensor.id);
+      centerLine.transition().duration(1000)
+        .attr('x2', this.xScale(positionSensor.data[positionSensor.data.length - 2].x))
+        .attr('y2', this.yScale(positionSensor.data[positionSensor.data.length - 2].y));
     });
   }
 

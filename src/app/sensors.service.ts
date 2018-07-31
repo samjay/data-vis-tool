@@ -19,7 +19,7 @@ export class SensorsService {
   private index = 50; // TODO temp index for emulating real time data
 
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
    * get sensor location of given id

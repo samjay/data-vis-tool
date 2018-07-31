@@ -2,4 +2,6 @@
   stroke: green;
   stroke-width: 0.4px;
   opacity: 1;
+  font: 10px Verdana;
+  font-style: oblique;
 }
