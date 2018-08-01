@@ -7,6 +7,7 @@ import {ChartService} from '../chart.service';
 import {parseDate, parseDateSource} from '../common/dateFormats';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
+import {PollingService} from '../polling.service';
 
 @Component({
   selector: 'app-chart',
@@ -24,12 +25,15 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   toDateDisp;
   fromDate;
   toDate;
+  toDateMax;
   chartId;
   dataReady = false;
-  realTimeId;
+  seek = false;
+  pollingSubscription;
 
   constructor(private dateFilterService: DateFilterService,
               private sensorService: SensorsService,
+              private pollingService: PollingService,
               private chartService: ChartService) { }
 
   @Input() sensor: Sensor;
@@ -40,11 +44,20 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     if (this.sensor) {
       this.chartId = 'lineChart' + this.sensor.id + Math.round(Math.random() * 10);
     }
-    this.realTimeUpdate();
+    // this.realTimeUpdate();
+    // this.pollingService.startPolling();
+    // this.pollingService.pollingItem.subscribe(() => {
+    //   this.getData();
+    // });
   }
 
   ngOnChanges() {
+    this.pollingService.stopPolling(this.pollingSubscription);
     this.getData();
+    this.pollingService.startPolling();
+    this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
+      this.getData();
+    });
   }
 
   getData() {
@@ -70,16 +83,24 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
       this.preparedData.push({'date': parseDateSource(d.timeStamp), 'y': d.x});
     });
     this.fromDate = this.preparedData[0].date;
-    this.toDate = this.preparedData[this.preparedData.length - 1].date;
+    this.toDateMax = this.preparedData[this.preparedData.length - 1].date;
+    this.dateFilterService.setLowerDate(this.fromDate);
+    this.dateFilterService.setUpperDate(this.toDateMax);
     this.prepared = true;
   }
 
   filter() {
+    // if (this.toDate) {
+    //   if (this.toDate === this.toDateMax) {
+    //
+    //   }
+    // } else {
+    //   this.toDate = this.toDateMax;
+    // }
       this.filteredData = this.preparedData
         .filter((d) =>
-          d.date >= this.fromDate && d.date <= this.toDate);
-    this.dateFilterService.lowerDate = this.filteredData[0].date;
-    this.dateFilterService.upperDate = this.filteredData[this.filteredData.length - 1].date;
+          d.date >= this.fromDate && d.date <= this.toDateMax);
+
   }
 
   draw() {
@@ -135,24 +156,29 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false, yScale, true, _height, _width);
   }
 
-  realTimeUpdate() { // TODO polling service
-    this.realTimeId = window.setInterval(() => {
-     this.getData();
-    }, 4000);
-  }
-
   onDateRangeChange(dateRange: any) {
     this.toDateDisp = dateRange.to;
     this.fromDateDisp = dateRange.from;
     this.fromDate = parseDate(dateRange.from);
-    this.toDate = parseDate(dateRange.to);
+    this.toDateMax = parseDate(dateRange.to);
     this.filter();
     this.draw();
   }
 
-  ngOnDestroy() {
-    if (this.realTimeId) {
-      window.clearInterval(this.realTimeId);
+  toggleSeek() {
+    console.log('toggled');
+    this.seek = !this.seek;
+    if (this.seek) {
+      this.pollingService.stopPolling(this.pollingSubscription);
+    } else {
+      this.pollingService.startPolling();
+      this.pollingService.pollingItem.subscribe(() => {
+        this.getData();
+      });
     }
+  }
+
+  ngOnDestroy() {
+    this.pollingService.stopPolling(this.pollingSubscription);
   }
 }

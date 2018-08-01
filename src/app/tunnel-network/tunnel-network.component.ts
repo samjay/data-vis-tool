@@ -6,6 +6,7 @@ import {SensorsService} from '../sensors.service';
 import {COLORS, rygColors, sensorColors} from '../models/colors';
 import {height, margin, width} from '../common/svg-dimensions';
 import {SENSORS} from '../sensor-list/sensors-list';
+import {PollingService} from '../polling.service';
 
 @Component({
   selector: 'app-tunnel-network',
@@ -23,12 +24,14 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   dataColorScale;
   minVal;
   maxVal;
-  animateID;
+  // animateID;
   sensorTypes = [SENSORS[0], SENSORS[1], SENSORS[2], SENSORS[8]]; // TODO sensors from service
   selectedSensorType = this.sensorTypes[3];
+  pollingSubscription;
 
   constructor(private router: Router,
-              private sensorService: SensorsService) { }
+              private sensorService: SensorsService,
+              private pollingService: PollingService) { }
 
   ngOnInit() {
     this.svgContainer = d3.select('#tunnelNetChart').append('svg')
@@ -53,7 +56,9 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
         this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
         this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
         this.showData();
-        this.animate();
+        this.pollingService.startPolling();
+        this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
+        // this.animate();
         this.draw();
       });
     });
@@ -183,18 +188,17 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   typeSelected() {
-    if (this.animateID) {
-      window.clearInterval(this.animateID);
-    }
+    this.pollingService.stopPolling(this.pollingSubscription);
     this.pollData();
-    this.animate();
+    this.pollingService.startPolling();
+    this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
   }
 
-  animate() {
-    this.animateID = window.setInterval(() => {
-      this.pollData();
-    }, 3000);
-  }
+  // animate() {
+  //   this.animateID = window.setInterval(() => {
+  //     this.pollData();
+  //   }, 3000);
+  // }
 
   pollData() {
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
@@ -320,8 +324,6 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.animateID) {
-      window.clearInterval(this.animateID);
-    }
+    this.pollingService.stopPolling(this.pollingSubscription);
   }
 }

@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
-import {Observable, of} from 'rxjs/index';
+import {Observable, of, Subject} from 'rxjs/index';
 import {TunnelNetwork} from './models/tunnel-network';
 import {HttpClient} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import {SensorLocation} from './models/sensor-location';
 import {tap} from 'rxjs/internal/operators';
-import index from '@angular/cli/lib/cli';
-import {forEach} from '@angular/router/src/utils/collection';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +15,7 @@ export class SensorsService {
   private locationURL = '/api/locations';
   private sensorURL = '/api/sensorData';
   private index = 50; // TODO temp index for emulating real time data
-
-
+  private fromIndex;
   constructor(private http: HttpClient) {}
 
   /**
@@ -54,17 +51,8 @@ export class SensorsService {
         tap(sensors => {
           this.index++;
           sensors.forEach( sensor => {
-            let fromIndex;
-            if (this.index > 50) {
-              if (this.index > 200) {
-                this.index = 50;
-                fromIndex = 0;
-              }
-              fromIndex =  this.index - 50;
-            } else {
-              fromIndex = 0;
-            }
-            sensor.data = sensor.data.slice(fromIndex, this.index);
+            this.updateIndex();
+            sensor.data = sensor.data.slice(this.fromIndex, this.index);
           });
         }),
         catchError(this.handleError('getTunnelNet'))
@@ -80,20 +68,24 @@ export class SensorsService {
     const url = `${this.sensorURL}/${sensorKey}`;
     return this.http.get<any>(url).pipe(
       tap(sensorObj => {
-        let fromIndex;
-        if (this.index > 50) {
-          if (this.index > 200) {
-            this.index = 50;
-            fromIndex = 0;
-          }
-          fromIndex =  this.index - 50;
-        } else {
-          fromIndex = 0;
-        }
-        sensorObj.data = sensorObj.data.slice(fromIndex, this.index);
+        this.index++;
+        this.updateIndex(); // TODO manual creation of realtime update, remove when it's there
+        sensorObj.data = sensorObj.data.slice(this.fromIndex, this.index);
       }),
       catchError(this.handleError<any>(`getSensorsdata from sensor=${sensorKey}`))
     );
+  }
+
+  updateIndex() {
+    if (this.index > 50) {
+      if (this.index > 200) {
+        this.index = 50;
+        this.fromIndex = 0;
+      }
+      this.fromIndex =  this.index - 50;
+    } else {
+      this.fromIndex = 0;
+    }
   }
 
 
@@ -117,4 +109,6 @@ export class SensorsService {
       return of(result as T);
     };
   }
+
+
 }

@@ -57,7 +57,6 @@ export class ScaleLegendComponent implements OnInit, OnChanges {
       .attr('height', this.rectHeight)
       .attr('fill', (d) => {
         if (this.color) {
-          console.log('fds');
           return this.rectColor(d);
         } else if (this.sensor) {
           const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.sensor.id);

@@ -1,28 +1,31 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import {Subject} from 'rxjs/index';
 
 @Injectable()
 export class DateFilterService {
 
-  lowerDate: Date;
-  upperDate: Date;
+  private lowerDateSubject = new Subject<Date>();
+  lowerDate = this.lowerDateSubject.asObservable();
+  private upperDateSubject = new Subject<Date>();
+  upperDate = this.upperDateSubject.asObservable();
 
   constructor() { }
 
   setLowerDate(date: Date) {
-    this.lowerDate = date;
+    this.lowerDateSubject.next(date);
   }
 
   setUpperDate(date: Date) {
-    this.upperDate = date;
+    this.upperDateSubject.next(date);
   }
 
-  getLowerDate(): Observable<Date> {
-    return of(this.lowerDate);
-  }
+  // getLowerDate(): Observable<Date> {
+  //   return of(this.lowerDate);
+  // }
 
-  getUpperDate(): Observable<Date> {
-    return of(this.upperDate);
-  }
+  // getUpperDate(): Observable<Date> {
+  //   return of(this.upperDate);
+  // }
 
 }

@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { margin } from '../common/svg-dimensions';
 import {SensorsService} from '../sensors.service';
 import {ChartService} from '../chart.service';
+import {PollingService} from '../polling.service';
 
 @Component({
   selector: 'app-sensor-movement',
@@ -24,11 +25,6 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   filtered accelorometer data
    */
   accelerometerData;
-  /*
-  unique id to create and destroy the animating thread
-   */
-  animateId;
-
   xScale;
   yScale;
 
@@ -42,8 +38,10 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   height = 700;
   width = 1400;
   centerNode = {'x': 250, 'y': 250};
+  pollingSubscription;
 
-  constructor(private sensorService: SensorsService) { }
+  constructor(private sensorService: SensorsService,
+              private pollingService: PollingService) { }
 
   ngOnInit() {
 
@@ -57,7 +55,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
         this.sensorSource = sensorNodes;
         this.prepare();
         this.draw();
-        this.animate();
+        this.pollingService.startPolling();
+        this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
     });
   }
 
@@ -150,15 +149,6 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * start the animation cycle
-   */
-  animate() {
-    this.animateId = window.setInterval(() => {
-      this.pollData();
-    }, 3000);
-  }
-
-  /**
    * request new sensor network again
    */
   pollData() {
@@ -209,8 +199,6 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    * stop the animation cycle
    */
   ngOnDestroy() {
-    if (this.animateId) {
-      window.clearInterval(this.animateId);
-    }
+    this.pollingService.stopPolling(this.pollingSubscription);
   }
 }

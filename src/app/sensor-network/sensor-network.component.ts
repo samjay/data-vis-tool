@@ -5,6 +5,7 @@ import {rygColors} from '../models/colors';
 import {SENSORS} from '../sensor-list/sensors-list';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
+import {PollingService} from '../polling.service';
 
 @Component({
   selector: 'app-sensor-network',
@@ -46,9 +47,10 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   currentSensorValues = [];
   option1;
   option2;
-  animateID;
+  pollingSubscription;
 
-  constructor(private sensorService: SensorsService) { }
+  constructor(private sensorService: SensorsService,
+              private pollingService: PollingService) { }
 
   ngOnInit() {
     this.option1 = true;
@@ -57,7 +59,9 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       this.sensorSource = sensorNodes;
       this.prepare();
       this.draw();
-      this.animate();
+      this.pollingService.startPolling();
+      this.pollingSubscription = this.pollingService.pollingItem.subscribe( () => this.pollData());
+      // this.animate();
     });
   }
 
@@ -259,11 +263,6 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
     return this.yScale(this.centerNode.y) -
       this.getyVal(this.radialScale(this.currentSensorValues[i].signal), (360 / this.currentSensorValues.length) * i);
   }
-  animate() {
-    this.animateID = window.setInterval(() => {
-      this.pollData();
-    }, 4000);
-  }
 
   pollData() {
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
@@ -274,9 +273,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.animateID) {
-      window.clearInterval(this.animateID);
-    }
+    this.pollingService.stopPolling(this.pollingSubscription);
   }
 
   /**
