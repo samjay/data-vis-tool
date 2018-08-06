@@ -142,10 +142,10 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
       .call(xAxis);
     this.svgContainer.append('text').attr('class', 'axis')
       .attr('transform',
-        'translate(' + (width / 2) + ' ,' +
-        (height - margin.bottom + margin.top) + ')')
+        'translate(' + (margin.left - 20) + ' ,' +
+        (margin.top + 10) + ')')
       .style('text-anchor', 'middle')
-      .text(this.sensor.name);
+      .text('Units');
     this.svgContainer.append('g')
       .attr('class', 'axis')
       .attr('transform', 'translate(' + margin.left  + ', 0)')

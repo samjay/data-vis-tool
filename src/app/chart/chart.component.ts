@@ -122,6 +122,14 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
       .range(_yRange);
     const yAxis = d3.axisLeft(yScale);
 
+    // text label for the y axis
+    this.svgContainer.append('text').attr('class', 'axis')
+      .attr('transform',
+        'translate(' + (margin.left - 5) + ' ,' +
+        (margin.top + 15) + ')')
+      .style('text-anchor', 'middle')
+      .text(this.sensor.unit);
+
     // Add Axis
     this.svgContainer.append('g')
       .attr('class', 'x axis')

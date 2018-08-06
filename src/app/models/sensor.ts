@@ -5,4 +5,5 @@ export class Sensor {
   name: string;
   chart: Chart;
   status_ok: boolean;
+  unit: string;
 }

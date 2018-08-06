@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, OnInit} from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
 import {rygColors, sensorColors} from '../models/colors';
+import {margin} from '../common/svg-dimensions';
 
 @Component({
   selector: 'app-scale-legend',
@@ -77,6 +78,14 @@ export class ScaleLegendComponent implements OnInit, OnChanges {
       .attr('class', 'axis')
       .attr('transform', 'translate(' + 50  + ', ' + 0 + ')')
       .call(d3.axisRight(axisScale));
+
+    // text label for the y axis
+    this.svgContainer.append('text').attr('class', 'axis')
+      .attr('transform',
+        'translate(' + (margin.left - 5) + ' ,' +
+        (margin.top + 15) + ')')
+      .style('text-anchor', 'middle')
+      .text(this.sensor.unit);
   }
 
 }

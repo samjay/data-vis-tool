@@ -4,7 +4,8 @@
   <h6 class="h6">Sensor key {{sensor.id}} Location {{location.id}}</h6>
   </div>
   <div [id]="chartId"></div>
-  <input *ngIf="!sizeSmall" type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart
+  <div *ngIf="!sizeSmall">
+  <input type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart </div>
 
   <div *ngIf="seek">
     <app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall"
