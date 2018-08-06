@@ -1,6 +1,9 @@
 <div *ngIf="sensor">
   <h4 class="h4">{{sensor.name}}</h4>
-  <h6 class="h6">Showing data of 30 days from {{selectedDate}}</h6>
+  <h6 class="h6">Showing data of 30 days before {{selectedDate}}</h6>
 </div>
 <div id="scatterPlot"></div>
-<app-date-slider [single]="true" *ngIf="prepared" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
+<input type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart
+<div *ngIf="seek">
+<app-date-slider [single]="true" *ngIf="prepared" [fromDateObj]="fromDate" [toDateObj]="toDate" (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
+</div>

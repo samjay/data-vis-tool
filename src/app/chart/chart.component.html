@@ -4,10 +4,11 @@
   <h6 class="h6">Sensor key {{sensor.id}} Location {{location.id}}</h6>
   </div>
   <div [id]="chartId"></div>
-      <input type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart
+  <input *ngIf="!sizeSmall" type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart
 
-  <div *ngIf="!sizeSmall && seek">
-    <app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall" [fromDateObj]="fromDate" [toDateObj]="toDateMax"
+  <div *ngIf="seek">
+    <app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall"
+                     [fromDateObj]="fromDate" [toDateObj]="toDateMax"
                                            (dateFilterChange)="onDateRangeChange($event)"></app-date-slider>
   </div>
 </div>

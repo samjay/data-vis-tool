@@ -14,6 +14,7 @@ export class PollingService {
   constructor() { }
 
   public startPolling() {
+    this.pollingSubject.subscribe();
     if (!this.started) {
       this.started = true;
       this.pollingId = window.setInterval(() => {
@@ -26,13 +27,10 @@ export class PollingService {
     this.pollingSubject.next();
   }
 
-  public stopPolling(subscription: Subscription) {
+  public stopPolling() {
     if (this.pollingId) {
       this.started = false;
       window.clearInterval(this.pollingId);
-    }
-    if (subscription) {
-      subscription.unsubscribe();
     }
   }
 }

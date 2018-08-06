@@ -55,12 +55,12 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.option1 = true;
     this.option2 = false;
+    this.pollingSubscription = this.pollingService.pollingItem.subscribe( () => this.pollData());
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
       this.sensorSource = sensorNodes;
       this.prepare();
       this.draw();
       this.pollingService.startPolling();
-      this.pollingSubscription = this.pollingService.pollingItem.subscribe( () => this.pollData());
       // this.animate();
     });
   }
@@ -184,7 +184,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
     // append circles for
     this.svgContainer.selectAll('circle').data(this.currentSensorValues).enter()
       .append('circle')
-      .attr('id', (d, i) => 'circle' + i)
+      .attr('id', (d, i) => 'circle2' + i)
       .attr('cx', 400)
       .attr('cy', (d, i) => i * ( height / this.currentSensorValues.length) + 50)
       .attr('r', 15)
@@ -273,7 +273,8 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.pollingService.stopPolling(this.pollingSubscription);
+    this.pollingService.stopPolling();
+    this.pollingSubscription.unsubscribe();
   }
 
   /**

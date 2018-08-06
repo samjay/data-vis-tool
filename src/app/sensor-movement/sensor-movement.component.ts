@@ -51,12 +51,13 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     // accelerometer values range from -16 to 16.
     this.lineLengthScale = d3.scaleLinear().domain([-16, 16]).range([-100, 100]);
 
+    this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
+
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
         this.sensorSource = sensorNodes;
         this.prepare();
         this.draw();
         this.pollingService.startPolling();
-        this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
     });
   }
 
@@ -199,6 +200,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    * stop the animation cycle
    */
   ngOnDestroy() {
-    this.pollingService.stopPolling(this.pollingSubscription);
+    this.pollingService.stopPolling();
+    this.pollingSubscription.unsubscribe();
   }
 }

@@ -18,10 +18,9 @@ export class DateSliderComponent implements OnInit, OnDestroy {
   style;
   styleBack;
   dateRange = [1, 20];
-  singleDate = 1;
+  singleDate = 20;
   toolTipFormat;
   ready;
-  selectionInitialized = false;
   @Input () single: boolean;
   @Input () small: boolean;
   @Input () fromDateObj: Date;
@@ -54,13 +53,6 @@ export class DateSliderComponent implements OnInit, OnDestroy {
       this.fromDateDisp = this.formatDateShort(this.fromDateObj);
       this.toDateDisp = this.formatDateShort(this.toDateObj);
 
-      // if (!this.selectionInitialized) {
-      //   this.initSelection();
-      // } else {
-      //   if (this.dateRange[0] === 1 || this.dateRange[1] === this.maxNum) {
-      //     this.initSelection();
-      //   }
-      // }
       this.initSelection();
 
       // date scale
@@ -89,7 +81,7 @@ export class DateSliderComponent implements OnInit, OnDestroy {
     this.valFrom = 1;
     this.valTo = this.maxNum;
     this.dateRange = [1, this.maxNum];
-    this.selectionInitialized = true;
+    this.singleDate = this.maxNum;
   }
 
   /**

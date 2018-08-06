@@ -24,7 +24,6 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   fromDateDisp;
   toDateDisp;
   fromDate;
-  toDate;
   toDateMax;
   chartId;
   dataReady = false;
@@ -44,20 +43,14 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     if (this.sensor) {
       this.chartId = 'lineChart' + this.sensor.id + Math.round(Math.random() * 10);
     }
-    // this.realTimeUpdate();
-    // this.pollingService.startPolling();
-    // this.pollingService.pollingItem.subscribe(() => {
-    //   this.getData();
-    // });
-  }
-
-  ngOnChanges() {
-    this.pollingService.stopPolling(this.pollingSubscription);
-    this.getData();
-    this.pollingService.startPolling();
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
       this.getData();
     });
+    this.pollingService.startPolling();
+  }
+
+  ngOnChanges() {
+    this.getData();
   }
 
   getData() {
@@ -90,13 +83,6 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   filter() {
-    // if (this.toDate) {
-    //   if (this.toDate === this.toDateMax) {
-    //
-    //   }
-    // } else {
-    //   this.toDate = this.toDateMax;
-    // }
       this.filteredData = this.preparedData
         .filter((d) =>
           d.date >= this.fromDate && d.date <= this.toDateMax);
@@ -166,19 +152,17 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   toggleSeek() {
-    console.log('toggled');
     this.seek = !this.seek;
+
     if (this.seek) {
-      this.pollingService.stopPolling(this.pollingSubscription);
+      this.pollingService.stopPolling();
     } else {
       this.pollingService.startPolling();
-      this.pollingService.pollingItem.subscribe(() => {
-        this.getData();
-      });
     }
   }
 
   ngOnDestroy() {
-    this.pollingService.stopPolling(this.pollingSubscription);
+    this.pollingService.stopPolling();
+    this.pollingSubscription.unsubscribe();
   }
 }

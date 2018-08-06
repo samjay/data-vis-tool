@@ -1,4 +1,4 @@
-import { Component, OnChanges, Input } from '@angular/core';
+import { Component, OnInit, OnChanges, OnDestroy, Input } from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
 import {height, margin, width} from '../common/svg-dimensions';
@@ -8,13 +8,14 @@ import {ChartService} from '../chart.service';
 import {parseDate, parseDateSource} from '../common/dateFormats';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
+import {PollingService} from '../polling.service';
 
 @Component({
   selector: 'app-scatter-plot',
   templateUrl: './scatter-plot.component.html',
   styleUrls: ['./scatter-plot.component.css']
 })
-export class ScatterPlotComponent implements OnChanges {
+export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
   readData = [];
   preparedData = [];
   filteredData = [];
@@ -26,23 +27,34 @@ export class ScatterPlotComponent implements OnChanges {
   yMax;
   prepared;
   selectedDate;
+  fromDate;
+  toDate;
+
+  seek = false;
+  pollingSubscription;
 
   constructor(private dateFilterService: DateFilterService,
               private sensorService: SensorsService,
+              private pollingService: PollingService,
               private chartService: ChartService) { }
 
   @Input() sensor: Sensor;
   @Input() location: SensorLocation;
 
+  ngOnInit() {
+    this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
+      this.getData();
+    });
+    this.pollingService.startPolling();
+  }
+
   /**
-   * Load the component each time the selected sensor in the parent sensor-list component changes
+   * Load the data and redraw each time the selected sensor in the parent sensor-list component changes
    */
   ngOnChanges() {
     if (this.svgContainer) {
       this.svgContainer.remove();
     }
-    this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
-      .attr('height', height).style('border', '1px solid black');
     this.getData();
   }
 
@@ -72,8 +84,9 @@ export class ScatterPlotComponent implements OnChanges {
     this.readData.forEach((d) => {
       this.preparedData.push({'x': d.x, 'y': d.y, 'date': parseDateSource(d.timeStamp)});
     });
-    this.dateFilterService.lowerDate = this.preparedData[0].date;
-    this.dateFilterService.upperDate = this.preparedData[this.preparedData.length - 1].date;
+    this.dateFilterService.setLowerDate(this.preparedData[0].date);
+    this.dateFilterService.setUpperDate(this.preparedData[this.preparedData.length - 1].date);
+    this.selectedDate = this.preparedData[this.preparedData.length - 1].date;
     this.prepared = true;
   }
 
@@ -81,21 +94,22 @@ export class ScatterPlotComponent implements OnChanges {
    * Filter the data
    */
   filter() {
-    // will show data within week of selected date
-    const daysAfter30 = new Date();
-    if (!this.selectedDate) {
-      this.selectedDate = this.preparedData[0].date;
-    }
-    daysAfter30.setTime(this.selectedDate.getTime() + (30 * 24 * 60 * 60 * 1000));
+    // will show data within month of selected date
+    const daysBefore30 = new Date();
+    this.fromDate = this.preparedData[0].date;
+    this.toDate = this.preparedData[this.preparedData.length - 1].date;
+    daysBefore30.setTime(this.selectedDate.getTime() - (30 * 24 * 60 * 60 * 1000));
     this.filteredData = this.preparedData.filter((d) =>
-      d.date >= this.selectedDate && d.date <= daysAfter30);
+      d.date <= this.selectedDate && d.date >= daysBefore30);
   }
 
   /**
    * Draw SVG
    */
   draw() {
-    this.svgContainer.remove();
+    if (this.svgContainer) {
+      this.svgContainer.remove();
+    }
     this.svgContainer = d3.select('#scatterPlot').append('svg').attr('width', width)
       .attr('height', height).style('border', '1px solid black');
 
@@ -137,7 +151,8 @@ export class ScatterPlotComponent implements OnChanges {
       .attr('transform', 'translate(' + margin.left  + ', 0)')
       .call(yAxis);
 
-    this.chartService.addMouseCursorTracker(this.svgContainer, this.xAxisScale, true, this.yAxisScale, true, height, width);
+    this.chartService.addMouseCursorTracker(this.svgContainer, this.xScale,
+      true, this.yAxisScale, true, height, width);
   }
 
   /**
@@ -150,4 +165,17 @@ export class ScatterPlotComponent implements OnChanges {
     this.draw();
   }
 
+  toggleSeek() {
+    this.seek = !this.seek;
+    if (this.seek) {
+      this.pollingService.stopPolling();
+    } else {
+      this.pollingService.startPolling();
+    }
+  }
+
+  ngOnDestroy() {
+    this.pollingService.stopPolling();
+    this.pollingSubscription.unsubscribe();
+  }
 }

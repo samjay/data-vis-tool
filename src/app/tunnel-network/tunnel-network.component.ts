@@ -51,14 +51,15 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
           d3.max(this.tunnelNet.locations, (location) => location.y)])
         .range([margin.top + 50, height]);
 
+
+      this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
+
       this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
         this.sensorSource = sensorNodes;
         this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
         this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
         this.showData();
         this.pollingService.startPolling();
-        this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
-        // this.animate();
         this.draw();
       });
     });
@@ -188,17 +189,8 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   typeSelected() {
-    this.pollingService.stopPolling(this.pollingSubscription);
     this.pollData();
-    this.pollingService.startPolling();
-    this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
   }
-
-  // animate() {
-  //   this.animateID = window.setInterval(() => {
-  //     this.pollData();
-  //   }, 3000);
-  // }
 
   pollData() {
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
@@ -324,6 +316,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.pollingService.stopPolling(this.pollingSubscription);
+    this.pollingService.stopPolling();
+    this.pollingSubscription.unsubscribe();
   }
 }
