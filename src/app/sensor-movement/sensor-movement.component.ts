@@ -13,6 +13,7 @@ import {SENSORS} from '../sensor-list/sensors-list';
 export class SensorMovementComponent implements OnInit, OnDestroy {
 
   svgContainer;
+  legendSvg;
   /*
   sensor data array from source
    */
@@ -57,6 +58,24 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     this.lineLengthScale = d3.scaleLinear()
       .domain([this.acceleration.source.min, this.acceleration.source.max])
       .range([this.acceleration.line.min, this.acceleration.line.max]);
+    console.log(this.lineLengthScale(10));
+
+    // show acceleration legend
+    this.legendSvg = d3.select('#legend').append('svg').attr('width', 200)
+      .attr('height', 100);
+    this.legendSvg.append('line')
+      .attr('x1', 10)
+      .attr('y1', 10)
+      .attr('x2', 10 + this.lineLengthScale(this.acceleration.source.max))
+      .attr('y2', 10)
+      .attr('stroke-width', this.accelerationLine.strokeWidth)
+      .attr('stroke', 'blue');
+    const axisScale = d3.scaleLinear().domain([0, this.acceleration.source.max]).range([0, this.acceleration.line.max]);
+    // Add grid
+    this.legendSvg.append('g')
+      .attr('class', 'axis')
+      .attr('transform', 'translate(' + 10  + ', ' + 10 + ')')
+      .call(d3.axisBottom(axisScale));
 
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
