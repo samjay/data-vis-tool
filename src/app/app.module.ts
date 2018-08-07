@@ -20,6 +20,9 @@ import {InMemoryDataService} from './in-memory-data.service';
 import { SensorNetworkComponent } from './sensor-network/sensor-network.component';
 import { ScaleLegendComponent } from './scale-legend/scale-legend.component';
 import { SensorMovementComponent } from './sensor-movement/sensor-movement.component';
+import {NgProgressModule} from 'ngx-progressbar';
+import {PollingService} from './polling.service';
+import {ChartService} from './chart.service';
 
 @NgModule({
   declarations: [
@@ -46,11 +49,14 @@ import { SensorMovementComponent } from './sensor-movement/sensor-movement.compo
     HttpClientInMemoryWebApiModule.forRoot(
       InMemoryDataService, {dataEncapsulation: false}
     ),
-    NouisliderModule
+    NouisliderModule,
+    NgProgressModule
   ],
   providers: [
     SensorsService,
-    DateFilterService
+    DateFilterService,
+    PollingService,
+    ChartService
   ],
   bootstrap: [AppComponent]
 })

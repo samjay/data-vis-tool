@@ -4,6 +4,7 @@ import { margin } from '../common/svg-dimensions';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
 import {SENSORS} from '../sensor-list/sensors-list';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-sensor-movement',
@@ -47,7 +48,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   grid = {margin: {top: 40}};
 
   constructor(private sensorService: SensorsService,
-              private pollingService: PollingService) { }
+              private pollingService: PollingService,
+              public ngProgress: NgProgress) { }
 
   ngOnInit() {
 
@@ -79,10 +81,12 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
 
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
+    this.ngProgress.start();
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
         this.sensorSource = sensorNodes;
         this.prepare();
         this.draw();
+        this.ngProgress.done();
         this.pollingService.startPolling();
     });
   }

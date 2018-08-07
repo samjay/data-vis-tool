@@ -33,6 +33,7 @@
     "ng2-slider-component": "^1.0.9",
     "ng2-styled-directive": "^1.0.6",
     "ngx-bootstrap": "^2.0.5",
+    "ngx-progressbar": "^2.1.1",
     "nouislider": "^11.1.0",
     "popper.js": "^1.14.3",
     "rxjs": "6.1.0",

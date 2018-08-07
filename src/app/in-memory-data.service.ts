@@ -4,6 +4,8 @@ import {SENSORS} from './sensor-list/sensors-list';
 import {Tunnel} from './models/tunnel';
 import {TunnelNetwork} from './models/tunnel-network';
 import * as d3 from 'd3';
+import {Sensor} from './models/sensor';
+import {CHARTS} from './chart/chart-list';
 
 export class InMemoryDataService implements InMemoryDbService {
   csvFileData = [];
@@ -21,62 +23,65 @@ export class InMemoryDataService implements InMemoryDbService {
         status_ok: true
       },
       { id: 2,
-        x: 150, y: 1, z: 0,
-        sensor_list: [SENSORS[2], SENSORS[4]],
-        status_ok: true
-      },
-      { id: 3,
         x: 170, y: 30, z: 0,
         sensor_list: [SENSORS[1], SENSORS[2], SENSORS[6]],
         status_ok: false
       },
-      { id: 4,
+      { id: 3,
         x: 300, y: 30, z: 0,
         sensor_list: [SENSORS[0], SENSORS[2], SENSORS[4]],
         status_ok: true
       },
-      { id: 5,
+      { id: 4,
         x: 120, y: 140, z: 0,
         sensor_list: [SENSORS[6], SENSORS[1], SENSORS[2]],
         status_ok: false
       },
-      { id: 6,
+      { id: 5,
         x: 70, y: 130, z: 0,
         sensor_list: [SENSORS[0], SENSORS[2], SENSORS[4]],
         status_ok: true
       },
-      { id: 7,
-        x: 90, y: 140, z: 0,
-        sensor_list: [SENSORS[1], SENSORS[4], SENSORS[6]],
-        status_ok: true
-      },
-      { id: 8,
+      { id: 6,
         x: 250, y: 140, z: 0,
         sensor_list: [SENSORS[0], SENSORS[2], SENSORS[1]],
         status_ok: false
       },
-      { id: 9,
+      { id: 7,
         x: 300, y: 220, z: 0,
         sensor_list: [SENSORS[6], SENSORS[2], SENSORS[0]],
         status_ok: true
       },
-      { id: 10,
+      { id: 8,
         x: 30, y: 220, z: 0,
         sensor_list: [SENSORS[0], SENSORS[6], SENSORS[4]],
         status_ok: false
       }
     ];
 
-    const tunnel1: Tunnel = { locations: [locations[0], locations[1], locations[2], locations[3]]};
-    const tunnel2: Tunnel = { locations: [locations[0], locations[1], locations[2], locations[4]]};
-    const tunnel3: Tunnel = { locations: [locations[5], locations[6], locations[4], locations[7], locations[8]]};
-    const tunnel4: Tunnel = { locations: [locations[9], locations[4]]};
+    const tunnel1: Tunnel = { locations: [locations[0], locations[1], locations[2]]};
+    const tunnel2: Tunnel = { locations: [locations[0], locations[1], locations[3]]};
+    const tunnel3: Tunnel = { locations: [locations[4], locations[3], locations[5], locations[6]]};
+    const tunnel4: Tunnel = { locations: [locations[7], locations[3]]};
+    const SENSORSLIST: Sensor[] = [
+      {id: 'A', name: 'Temperature', chart: CHARTS[1], status_ok: true, unit: '°celsius', range: {min: -15, max: 50}},
+      {id: 'B', name: 'Humidity', chart: CHARTS[1], status_ok: true, unit: '%' , range: {min: 1, max: 100}},
+      {id: 'C', name: 'Pressure', chart: CHARTS[1], status_ok: true, unit: 'Pa', range: {min: 90000, max: 120000}},
+      {id: 'D', name: 'Position', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 1000}},
+      {id: 'E', name: 'Gyroscope', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 100} },
+      {id: 'F', name: 'GPS', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 1000}},
+      {id: 'G', name: 'Battery', chart: CHARTS[1], status_ok: true, unit: '%', range: {min: 0, max: 100}},
+      {id: 'H', name: 'Signal', chart: CHARTS[1], status_ok: true, unit: '%' , range: {min: 0, max: 100}},
+      {id: 'I', name: 'People', chart: CHARTS[2], status_ok: true, unit: 'number' , range: {min: 0, max: 15}},
+      {id: 'J', name: 'Accelorometer', chart: CHARTS[2], status_ok: true, unit: '', range: {min: -16, max: 16} }
+    ];
+    const overViewSensors = [SENSORSLIST[0], SENSORSLIST[1], SENSORSLIST[2], SENSORSLIST[8]];
 
     const tunnelNet: TunnelNetwork = {tunnels: [tunnel1, tunnel2, tunnel3, tunnel4],
       locations: locations};
 
     return {'tunnelNet': tunnelNet, 'locations': tunnelNet.locations,
-      'sensorData': this.sensordataList};
+      'sensorData': this.sensordataList, 'sensorList': SENSORSLIST, 'overViewSensors': overViewSensors};
   }
 
   createSensorData() {

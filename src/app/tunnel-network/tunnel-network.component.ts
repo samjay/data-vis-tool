@@ -5,8 +5,8 @@ import {Router} from '@angular/router';
 import {SensorsService} from '../sensors.service';
 import {COLORS, rygColors, sensorColors} from '../models/colors';
 import {height, margin, width} from '../common/svg-dimensions';
-import {SENSORS} from '../sensor-list/sensors-list';
 import {PollingService} from '../polling.service';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-tunnel-network',
@@ -15,29 +15,34 @@ import {PollingService} from '../polling.service';
 })
 export class TunnelNetworkComponent implements OnInit, OnDestroy {
 
-  tunnelNet: TunnelNetwork;
-  sensorSource;
+  tunnelNet: TunnelNetwork; // tunnel network from data
+  sensorSource; // sensor data
+
+  // d3
   svgContainer;
   xScale;
   yScale;
-  dataOpacityScale;
-  dataColorScale;
+  dataOpacityScale; // option1: opacity scale for data circles
+  dataColorScale; // option2: color scale for data circles
+
   minVal;
   maxVal;
-  sensorTypes = [SENSORS[0], SENSORS[1], SENSORS[2], SENSORS[8]]; // TODO sensors from service
-  selectedSensorType = this.sensorTypes[3];
+  sensorTypes; // TODO sensors from service
+  selectedSensorType;
   pollingSubscription;
   locationCircleRadius = 15;
+  dataReady = false;
 
   constructor(private router: Router,
               private sensorService: SensorsService,
-              private pollingService: PollingService) { }
+              private pollingService: PollingService, public ngProgress: NgProgress) { }
 
   ngOnInit() {
     this.svgContainer = d3.select('#tunnelNetChart').append('svg')
       .attr('width',  width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
 
+    this.ngProgress.start();
     this.sensorService.getTunnelNetwork().subscribe(tunnelNetwork => {
       this.tunnelNet = tunnelNetwork;
 
@@ -51,16 +56,21 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
           d3.max(this.tunnelNet.locations, (location) => location.y)])
         .range([margin.top + margin.bottom, height]);
 
-
       this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
-      this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
-        this.sensorSource = sensorNodes;
-        this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
-        this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
-        this.showData();
-        this.pollingService.startPolling();
-        this.draw();
+      this.sensorService.getOverViewSensors().subscribe(sensorsList => {
+        this.sensorTypes = sensorsList;
+        this.selectedSensorType = this.sensorTypes[2];
+        this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
+          this.sensorSource = sensorNodes;
+          this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
+          this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
+          this.dataReady = true;
+          this.showData();
+          this.pollingService.startPolling();
+          this.draw();
+          this.ngProgress.done();
+        });
       });
     });
   }
@@ -229,6 +239,10 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
 
   }
 
+  /**
+   * Dynamically find the domain range for given data
+   * @returns {[number , number]}
+   */
   getDataDomainRange() {
     const filterdSensors = this.sensorSource.filter(
       (sensorFilter) => sensorFilter.id.endsWith(this.selectedSensorType.id));

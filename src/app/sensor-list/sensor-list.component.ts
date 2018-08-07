@@ -5,6 +5,7 @@ import {Chart} from '../models/chart';
 import {DataFileService} from '../data-file.service';
 import {ActivatedRoute} from '@angular/router';
 import {SensorLocation} from '../models/sensor-location';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-sensor-list',
@@ -18,12 +19,11 @@ export class SensorListComponent implements OnInit {
   selectedSensor: Sensor;
   chart: Chart;
   constructor(private sensorService: SensorsService,
-              private dataFileService: DataFileService,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              public ngProgress: NgProgress) { }
 
   ngOnInit() {
     this.getSensors(+ this.route.snapshot.paramMap.get('id'));
-    this.dataFileService.readFileData();
   }
 
   /**
@@ -40,9 +40,11 @@ export class SensorListComponent implements OnInit {
    * @param {number} id
    */
   getSensors(id: number): void {
+    this.ngProgress.start();
     this.sensorService.getLocation(id).subscribe(location => {
       this.location = location;
       this.sensors = location.sensor_list;
+      this.ngProgress.done();
     });
   }
 

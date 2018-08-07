@@ -8,6 +8,7 @@ import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
 import {formatAxisDate, parseDefaultDate, parseSourceDate} from '../common/dateFormats';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-chart',
@@ -33,7 +34,8 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   constructor(private dateFilterService: DateFilterService,
               private sensorService: SensorsService,
               private pollingService: PollingService,
-              private chartService: ChartService) { }
+              private chartService: ChartService,
+              public ngProgress: NgProgress) { }
 
   @Input() sensor: Sensor;
   @Input() location: SensorLocation;
@@ -44,6 +46,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     if (this.sensor) {
       this.chartId = 'lineChart' + this.sensor.id + Math.round(Math.random() * 10);
     }
+    this.ngProgress.start();
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
       this.getData();
     });
@@ -51,6 +54,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   ngOnChanges() {
+    this.ngProgress.start();
     this.getData();
   }
 
@@ -66,6 +70,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
         this.filter();
         this.dataReady = true;
         this.draw();
+        this.ngProgress.done();
       }
     });
   }

@@ -2,6 +2,7 @@
   <h2 class="h2" style="margin-top: 40px;">Tunnel Network</h2>
   <div class="row">
     <div class="col-8">
+      <ng-progress [color]="'blue'" [thick]="true"></ng-progress>
       <div id="tunnelNetChart">
       </div>
     </div>
@@ -11,7 +12,7 @@
           <option *ngFor="let type of sensorTypes" [ngValue]="type">{{type.name}}</option>
         </select>
       </div>
-      <div class="row">
+      <div *ngIf="dataReady" class="row">
         <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
       </div>
     </div>

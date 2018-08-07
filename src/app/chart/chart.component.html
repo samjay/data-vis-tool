@@ -1,5 +1,6 @@
 <div *ngIf="sensor">
   <div>
+    <ng-progress [color]="'blue'" [thick]="true"></ng-progress>
   <h5 class="h5">{{sensor.name}}</h5>
   <h6 class="h6">Sensor key {{sensor.id}} Location {{location.id}}</h6>
   </div>

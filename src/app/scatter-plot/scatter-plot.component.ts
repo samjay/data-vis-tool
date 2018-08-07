@@ -9,6 +9,7 @@ import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
 import {oneDay, parseDefaultDate, parseSourceDate} from '../common/dateFormats';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-scatter-plot',
@@ -37,12 +38,14 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private dateFilterService: DateFilterService,
               private sensorService: SensorsService,
               private pollingService: PollingService,
-              private chartService: ChartService) { }
+              private chartService: ChartService,
+              public ngProgress: NgProgress) { }
 
   @Input() sensor: Sensor;
   @Input() location: SensorLocation;
 
   ngOnInit() {
+    this.ngProgress.start();
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
       this.getData();
     });
@@ -56,6 +59,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
     if (this.svgContainer) {
       this.svgContainer.remove();
     }
+    this.ngProgress.start();
     this.getData();
   }
 
@@ -73,6 +77,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
         this.prepare();
         this.filter();
         this.draw();
+        this.ngProgress.done();
       }
     });
   }

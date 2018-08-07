@@ -5,6 +5,7 @@ import {HttpClient} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import {SensorLocation} from './models/sensor-location';
 import {tap} from 'rxjs/internal/operators';
+import {Sensor} from './models/sensor';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,8 @@ export class SensorsService {
   private tunnelNetUrl = '/api/tunnelNet'; // URL to web API
   private locationURL = '/api/locations';
   private sensorURL = '/api/sensorData';
+  private sensorListURL = '/api/sensorList';
+  private overViewSensorListURL = '/api/overViewSensors';
   private index = 50; // TODO temp index for emulating real time data
   private fromIndex;
   constructor(private http: HttpClient) {}
@@ -88,6 +91,11 @@ export class SensorsService {
     }
   }
 
+  getOverViewSensors(): Observable<Sensor[]> {
+    return this.http.get<Sensor[]>(this.overViewSensorListURL).pipe(
+       catchError(this.handleError<Sensor[]>(`get overview sensors`))
+    );
+  }
 
 
   /**

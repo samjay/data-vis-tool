@@ -6,6 +6,7 @@ import {SENSORS} from '../sensor-list/sensors-list';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
+import {NgProgress} from 'ngx-progressbar';
 
 @Component({
   selector: 'app-sensor-network',
@@ -52,16 +53,19 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   circleNormalRadius = 15;
 
   constructor(private sensorService: SensorsService,
-              private pollingService: PollingService) { }
+              private pollingService: PollingService,
+              public ngProgress: NgProgress) { }
 
   ngOnInit() {
     this.option1 = true;
     this.option2 = false;
     this.pollingSubscription = this.pollingService.pollingItem.subscribe( () => this.pollData());
+    this.ngProgress.start();
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
       this.sensorSource = sensorNodes;
       this.prepare();
       this.draw();
+      this.ngProgress.done();
       this.pollingService.startPolling();
     });
   }

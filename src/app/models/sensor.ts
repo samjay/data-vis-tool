@@ -6,4 +6,5 @@ export class Sensor {
   chart: Chart;
   status_ok: boolean;
   unit: string;
+  range: {min: number, max: number};
 }
