@@ -2,8 +2,8 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import * as d3 from 'd3';
 import { margin } from '../common/svg-dimensions';
 import {SensorsService} from '../sensors.service';
-import {ChartService} from '../chart.service';
 import {PollingService} from '../polling.service';
+import {SENSORS} from '../sensor-list/sensors-list';
 
 @Component({
   selector: 'app-sensor-movement',
@@ -21,6 +21,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   filtered position data
    */
   positionData;
+  positionCircle = {radius: 20, strokeWidth: 3};
   /*
   filtered accelorometer data
    */
@@ -37,19 +38,25 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    */
   height = 700;
   width = 1400;
-  centerNode = {'x': 250, 'y': 250};
+  centerNode = {'x': 250, 'y': 250, width: 45, height: 40};
   pollingSubscription;
+  acceleration = {source: {min: -16, max: 16},
+    line: {min: -100, max: 100}};
+  accelerationLine = { strokeWidth: 2 };
+  grid = {margin: {top: 40}};
 
   constructor(private sensorService: SensorsService,
               private pollingService: PollingService) { }
 
   ngOnInit() {
 
-    // TODO domain min and max
+    // TODO domain lineMin and max
     this.xScale = d3.scaleLinear().domain([0, 500]).range([margin.left, this.width - margin.right]);
     this.yScale = d3.scaleLinear().domain([0, 500]).range([this.height - margin.bottom, margin.top]);
     // accelerometer values range from -16 to 16.
-    this.lineLengthScale = d3.scaleLinear().domain([-16, 16]).range([-100, 100]);
+    this.lineLengthScale = d3.scaleLinear()
+      .domain([this.acceleration.source.min, this.acceleration.source.max])
+      .range([this.acceleration.line.min, this.acceleration.line.max]);
 
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
@@ -63,11 +70,11 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
 
   /**
    * filter the position and accelerometer sensors from the sensor network.
-   * sensor ids end with D and J respectively
+   * sensors 3 and 9 respectively
    */
   prepare() {
-    this.positionData = this.sensorSource.filter(sensorFilter => sensorFilter.id.endsWith('D'));
-    this.accelerometerData = this.sensorSource.filter(sensorFilter => sensorFilter.id.endsWith('J'));
+    this.positionData = this.sensorSource.filter(sensorFilter => sensorFilter.id.endsWith(SENSORS[3].id));
+    this.accelerometerData = this.sensorSource.filter(sensorFilter => sensorFilter.id.endsWith(SENSORS[9].id));
   }
 
   draw() {
@@ -81,13 +88,13 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     // Add grid
     this.svgContainer.append('g')
       .attr('class', 'grid')
-      .attr('transform', 'translate(' + 0 + ', ' + -40 + ')')
+      .attr('transform', 'translate(' + 0 + ', ' + -margin.top + ')')
       .call(d3.axisBottom(this.xScale)
         .tickSize( this.height , 0, 0)
       );
     this.svgContainer.append('g')
       .attr('class', 'grid')
-      .attr('transform', 'translate(' + 50 + ', 0)')
+      .attr('transform', 'translate(' + margin.left + ', 0)')
       .call(d3.axisLeft(this.yScale)
         .tickSize( - this.width , 0, 0)
       );
@@ -100,10 +107,10 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
         return this.xScale(d.data[d.data.length - 2].x); // TODO getting the last second value for this, fix
       })
       .attr('cy', (d) => this.yScale(d.data[d.data.length - 2].y))
-      .attr('r', 20)
+      .attr('r', this.positionCircle.radius)
       .attr('fill', 'white')
       .attr('stroke', 'black')
-      .attr('stroke-width', '3');
+      .attr('stroke-width', this.positionCircle.strokeWidth);
 
     // draw acceleration lines
     let accelerometer;
@@ -125,7 +132,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
         return this.yScale(d.data[d.data.length - 2].y) +
           this.lineLengthScale(accelerometer.data[accelerometer.data.length - 1].y);
       })
-      .attr('stroke-width', 2)
+      .attr('stroke-width', this.accelerationLine.strokeWidth)
       .attr('stroke', 'blue');
 
     // draw central connection lines
@@ -137,14 +144,14 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('x2', (d) => this.xScale(d.data[d.data.length - 2].x))
       .attr('y2', (d) => this.yScale(d.data[d.data.length - 2].y))
       .attr('stroke', 'lightBlue')
-      .attr('stroke-width', '1');
+      .attr('stroke-width', 1);
 
     // add center node TODO show tooltip
     this.svgContainer.append('rect')
-      .attr('x', this.xScale(this.centerNode.x) - 20)
-      .attr('y', this.yScale(this.centerNode.y) - 22)
-      .attr('height', 40)
-      .attr('width', 45)
+      .attr('x', this.xScale(this.centerNode.x) - this.centerNode.width / 2)
+      .attr('y', this.yScale(this.centerNode.y) - this.centerNode.height / 2)
+      .attr('height', this.centerNode.height)
+      .attr('width', this.centerNode.width)
       .attr('fill', 'navy');
 
   }
@@ -164,16 +171,17 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    * animate the position and acceleration with the updated values from polling
    */
   animatePosition() {
+    const animationDuration = 1000;
     this.positionData.forEach((positionSensor) => {
       const circle = d3.select('#sensorPosCircle' + positionSensor.id);
-      circle.transition().duration(1000)
+      circle.transition().duration(animationDuration)
         .attr('cx', () => {
           return this.xScale(positionSensor.data[positionSensor.data.length - 2].x);
         })
         .attr('cy', () => this.yScale(positionSensor.data[positionSensor.data.length - 2].y));
 
       const line = d3.select('#sensorAccLine' + positionSensor.id);
-      line.transition().duration(1000)
+      line.transition().duration(animationDuration)
         .attr('x1', this.xScale(positionSensor.data[positionSensor.data.length - 2].x))
         .attr('y1', this.yScale(positionSensor.data[positionSensor.data.length - 2].y))
         .attr('x2', () => {
@@ -190,7 +198,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
         });
 
       const centerLine = d3.select('#centerLine' + positionSensor.id);
-      centerLine.transition().duration(1000)
+      centerLine.transition().duration(animationDuration)
         .attr('x2', this.xScale(positionSensor.data[positionSensor.data.length - 2].x))
         .attr('y2', this.yScale(positionSensor.data[positionSensor.data.length - 2].y));
     });

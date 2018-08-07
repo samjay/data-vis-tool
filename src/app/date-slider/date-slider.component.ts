@@ -1,6 +1,7 @@
 import {Component, OnInit, Output, EventEmitter, Input, OnDestroy} from '@angular/core';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
+import {formatDefaultDate, oneDay} from '../common/dateFormats';
 
 @Component({
   selector: 'app-date-slider',
@@ -8,7 +9,7 @@ import * as d3 from 'd3';
   styleUrls: ['./date-slider.component.css']
 })
 export class DateSliderComponent implements OnInit, OnDestroy {
-  formatDateShort;
+  formatDateShort; // display dates
   fromDateDisp;
   toDateDisp;
   dateScale;
@@ -17,8 +18,8 @@ export class DateSliderComponent implements OnInit, OnDestroy {
   valTo;
   style;
   styleBack;
-  dateRange = [1, 20];
-  singleDate = 20;
+  dateRange = [1, this.maxNum];
+  singleDate = this.maxNum;
   toolTipFormat;
   ready;
   @Input () single: boolean;
@@ -30,11 +31,9 @@ export class DateSliderComponent implements OnInit, OnDestroy {
   constructor(private dateFilterService: DateFilterService) { }
 
   ngOnInit() {
-    // get the relevant min and max dates
+    // get the relevant lineMin and max dates
     this.dateFilterService.lowerDate.subscribe( lowerDate => {this.fromDateObj = lowerDate; this.updateRange(); });
-    // this.dateFilterService.getLowerDate().subscribe(lowerDate => this.fromDateObj = lowerDate);
     this.dateFilterService.upperDate.subscribe( upperDate => {this.toDateObj = upperDate; this.updateRange(); });
-    // this.dateFilterService.getUpperDate().subscribe(upperDate => this.toDateObj = upperDate);
 
     if (this.small) {
       this.style = 'size-small';
@@ -48,10 +47,9 @@ export class DateSliderComponent implements OnInit, OnDestroy {
 
   updateRange() {
     if (this.toDateObj && this.fromDateObj) {
-      // display min and max date
-      this.formatDateShort = d3.timeFormat('%m/%d/%Y');
-      this.fromDateDisp = this.formatDateShort(this.fromDateObj);
-      this.toDateDisp = this.formatDateShort(this.toDateObj);
+      // display lineMin and max date
+      this.fromDateDisp = formatDefaultDate(this.fromDateObj);
+      this.toDateDisp = formatDefaultDate(this.toDateObj);
 
       this.initSelection();
 
@@ -62,7 +60,7 @@ export class DateSliderComponent implements OnInit, OnDestroy {
 
       this.toolTipFormat = {
         to: (v) => {
-          return this.formatDateShort(this.dateScale(v));
+          return formatDefaultDate(this.dateScale(v));
         },
         from: (v) => {
           return v;
@@ -75,7 +73,6 @@ export class DateSliderComponent implements OnInit, OnDestroy {
 
   initSelection() {
     // date difference for max num
-    const oneDay = 24 * 3600 * 1000;
     const difference = this.toDateObj.getTime() - this.fromDateObj.getTime();
     this.maxNum = Math.round(difference / oneDay);
     this.valFrom = 1;

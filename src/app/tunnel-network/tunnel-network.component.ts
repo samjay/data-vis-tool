@@ -24,10 +24,10 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   dataColorScale;
   minVal;
   maxVal;
-  // animateID;
   sensorTypes = [SENSORS[0], SENSORS[1], SENSORS[2], SENSORS[8]]; // TODO sensors from service
   selectedSensorType = this.sensorTypes[3];
   pollingSubscription;
+  locationCircleRadius = 15;
 
   constructor(private router: Router,
               private sensorService: SensorsService,
@@ -49,7 +49,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       this.yScale = d3.scaleLinear()
         .domain([d3.min(this.tunnelNet.locations, (location) => location.y),
           d3.max(this.tunnelNet.locations, (location) => location.y)])
-        .range([margin.top + 50, height]);
+        .range([margin.top + margin.bottom, height]);
 
 
       this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
@@ -80,7 +80,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .attr('id', (d) => 'locationCircle' + d.id)
       .attr('cx', (d) => this.xScale(d.x))
       .attr('cy', (d) => this.yScale(d.y))
-      .attr('r', 15)
+      .attr('r', this.locationCircleRadius)
       .attr('fill', 'white').attr('stroke', 'black').attr('stroke-width', 4)
       .on('mouseover', (d, i, elem) => this.showDetails(d, i, elem))
       .on('mouseout', (d, i, elem) => this.hideDetails(d, i, elem))
@@ -95,6 +95,9 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
    * @param elem html element
    */
   showDetails(d, i, elem) {
+    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 150, height: 40}};
+    const toolTipText = {padding: {x: 33, y: 10}};
+    const animationDuration = 500;
     let locationId;
     if (d.id > 4) {
       locationId = (d.id % 4) + 1;
@@ -110,30 +113,30 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
 
     // Add background rectangle and animate
     this.svgContainer.append('rect').attr('id', 'r' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.xScale(d.x) + 30)
-      .attr('y', () => this.yScale(d.y) - 25)
-      .attr('width', 1).attr('height', 5)
+      .attr('x', () => this.xScale(d.x) + toolTipRect.padding.x)
+      .attr('y', () => this.yScale(d.y) - toolTipRect.padding.y)
+      .attr('width', toolTipRect.pre.width).attr('height', toolTipRect.post.height)
       .attr('fill', 'darkblue')
-      .transition().duration(500)
-      .attr('width', 150).attr('height', 40);
+      .transition().duration(animationDuration)
+      .attr('width', toolTipRect.post.width).attr('height', toolTipRect.post.height);
 
     // add text
     this.svgContainer.append('text').attr('id', 't1' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.xScale(d.x) + 33)
-      .attr('y', () => this.yScale(d.y) - 10)
+      .attr('x', () => this.xScale(d.x) + toolTipText.padding.x)
+      .attr('y', () => this.yScale(d.y) - toolTipText.padding.y)
       .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
       .text('Location: ' + d.id)
-      .attr('fill-opacity', 0)
-      .transition().delay(200).duration(500)
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
       .attr('fill-opacity', 1);
 
     this.svgContainer.append('text').attr('id', 'd' + d.x + '-' + d.y + '-' + i)
-      .attr('x', () => this.xScale(d.x) + 33)
-      .attr('y', () => this.yScale(d.y) + 10)
+      .attr('x', () => this.xScale(d.x) + toolTipText.padding.x)
+      .attr('y', () => this.yScale(d.y) - toolTipText.padding.y + 20)
       .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
       .text(this.selectedSensorType.name + ': ' + this.getCurrentValueOfSelectedType(locationId))
-      .attr('fill-opacity', 0)
-      .transition().delay(200).duration(500)
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
       .attr('fill-opacity', 1);
   }
 
@@ -146,7 +149,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   hideDetails(d, i, elem) {
     const circle = d3.select(elem[i]);
     circle.transition()
-      .duration(100).attr('r', 15);
+      .duration(100).attr('r', this.locationCircleRadius);
     d3.select('#t1' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#t2' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#d' + d.x + '-' + d.y + '-' + i).remove();
@@ -256,10 +259,11 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   animateData() {
+    const animationDuration = 500;
     for (let i = 0; i < this.tunnelNet.locations.length; i++) {
       const dataCircle = d3.select('#dataCircle' + this.tunnelNet.locations[i].id);
       dataCircle.
-      transition().duration(500)
+      transition().duration(animationDuration)
       // opacity data:
         .style('fill', () => {
           const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
@@ -274,7 +278,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
 
   dataOpacity(d) {
     let locationId;
-    if (d.id > 4) {
+    if (d.id > 4) { // TODO location temp adjustment
       locationId = (d.id % 4) + 1;
     } else {
       locationId = d.id;
@@ -287,7 +291,6 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       sensorFilter.id === locationId + this.selectedSensorType.id);
     const dataSensor = sensors[0];
     if (dataSensor) {
-      // console.log('loc val ' + d.id + ': ' + dataSensor.data[dataSensor.data.length - 1].x);
       return dataSensor.data[dataSensor.data.length - 1].x;
     } else {
       return 0;

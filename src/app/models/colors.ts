@@ -49,3 +49,5 @@ export const sensorColors = [
   {type: 'I', color: 'chocolate'}
 ];
 
+export const maxOpacity = 0.8;
+

@@ -2,12 +2,12 @@ import { Component, OnInit, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Sensor } from '../models/sensor';
 import { DateFilterService } from '../date-filter.service';
 import * as d3 from 'd3';
-import {height, heightSmall, margin, width, widthSmall} from '../common/svg-dimensions';
+import {axisLabelPadding, height, heightSmall, margin, width, widthSmall} from '../common/svg-dimensions';
 import {ChartService} from '../chart.service';
-import {parseDate, parseDateSource} from '../common/dateFormats';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
+import {formatAxisDate, parseDefaultDate, parseSourceDate} from '../common/dateFormats';
 
 @Component({
   selector: 'app-chart',
@@ -40,6 +40,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
   @Input() sizeSmall: boolean;
 
   ngOnInit() {
+    // generate chart ID s for uniqueness
     if (this.sensor) {
       this.chartId = 'lineChart' + this.sensor.id + Math.round(Math.random() * 10);
     }
@@ -71,9 +72,8 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
 
   prepare() {
     this.preparedData = [];
-
     this.readData.forEach((d) => {
-      this.preparedData.push({'date': parseDateSource(d.timeStamp), 'y': d.x});
+      this.preparedData.push({'date': parseSourceDate(d.timeStamp), 'y': d.x});
     });
     this.fromDate = this.preparedData[0].date;
     this.toDateMax = this.preparedData[this.preparedData.length - 1].date;
@@ -113,7 +113,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     const xAxisScale = d3.scaleTime()
       .domain([this.filteredData[0].date, this.filteredData[this.filteredData.length - 1].date])
       .rangeRound(_xRange);
-    const xAxis = d3.axisBottom(xAxisScale).tickFormat(d3.timeFormat('%b %y')).ticks(15).tickPadding(2);
+    const xAxis = d3.axisBottom(xAxisScale).tickFormat(formatAxisDate);
 
     // y-axis
     const yMax = d3.max(this.filteredData, (d) => d.y);
@@ -125,8 +125,8 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     // text label for the y axis
     this.svgContainer.append('text').attr('class', 'axis')
       .attr('transform',
-        'translate(' + (margin.left - 5) + ' ,' +
-        (margin.top + 15) + ')')
+        'translate(' + (margin.left - axisLabelPadding.left) + ' ,' +
+        (margin.top + axisLabelPadding.top) + ')')
       .style('text-anchor', 'middle')
       .text(this.sensor.unit);
 
@@ -147,14 +147,15 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     const lineFunction = d3.line().x(d => xScale(d.date)).y(d => yScale(d.y));
     this.svgContainer.append('path').attr('class', 'chart').attr('d', lineFunction(this.filteredData));
 
-    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale, false, yScale, true, _height, _width);
+    this.chartService.addMouseCursorTracker(this.svgContainer, xAxisScale,
+      false, yScale, true, _height, _width);
   }
 
   onDateRangeChange(dateRange: any) {
     this.toDateDisp = dateRange.to;
     this.fromDateDisp = dateRange.from;
-    this.fromDate = parseDate(dateRange.from);
-    this.toDateMax = parseDate(dateRange.to);
+    this.fromDate = parseDefaultDate(dateRange.from);
+    this.toDateMax = parseDefaultDate(dateRange.to);
     this.filter();
     this.draw();
   }
@@ -165,6 +166,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     if (this.seek) {
       this.pollingService.stopPolling();
     } else {
+      this.getData();
       this.pollingService.startPolling();
     }
   }

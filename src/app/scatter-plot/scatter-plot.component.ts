@@ -5,10 +5,10 @@ import {height, margin, width} from '../common/svg-dimensions';
 import {xRange, yRange} from '../common/range';
 import {DateFilterService} from '../date-filter.service';
 import {ChartService} from '../chart.service';
-import {parseDate, parseDateSource} from '../common/dateFormats';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
+import {oneDay, parseDefaultDate, parseSourceDate} from '../common/dateFormats';
 
 @Component({
   selector: 'app-scatter-plot',
@@ -29,6 +29,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
   selectedDate;
   fromDate;
   toDate;
+  scatterCircle = {radius: 5, opacity: 0.6};
 
   seek = false;
   pollingSubscription;
@@ -82,7 +83,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
   prepare() {
     this.preparedData = [];
     this.readData.forEach((d) => {
-      this.preparedData.push({'x': d.x, 'y': d.y, 'date': parseDateSource(d.timeStamp)});
+      this.preparedData.push({'x': d.x, 'y': d.y, 'date': parseSourceDate(d.timeStamp)});
     });
     this.dateFilterService.setLowerDate(this.preparedData[0].date);
     this.dateFilterService.setUpperDate(this.preparedData[this.preparedData.length - 1].date);
@@ -98,7 +99,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
     const daysBefore30 = new Date();
     this.fromDate = this.preparedData[0].date;
     this.toDate = this.preparedData[this.preparedData.length - 1].date;
-    daysBefore30.setTime(this.selectedDate.getTime() - (30 * 24 * 60 * 60 * 1000));
+    daysBefore30.setTime(this.selectedDate.getTime() - (30 * oneDay));
     this.filteredData = this.preparedData.filter((d) =>
       d.date <= this.selectedDate && d.date >= daysBefore30);
   }
@@ -126,26 +127,22 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
     this.yAxisScale = d3.scaleLinear()
       .domain([0, d3.max(this.preparedData, (d) => d.y)])
       .range(yRange);
-    const xAxis = d3.axisBottom(this.xScale).ticks(5);
+    const xAxis = d3.axisBottom(this.xScale);
     const yAxis = d3.axisLeft(this.yAxisScale);
 
     // circles
     this.svgContainer.append('g').selectAll('circle').data(this.filteredData).enter().append('circle')
       .attr('cx', (d) => this.xScale(d.x))
       .attr('cy', (d) => this.yScale(d.y))
-      .attr('r', 5).attr('fill-opacity', 0.6).attr('fill', 'blue');
+      .attr('r', this.scatterCircle.radius)
+      .attr('fill-opacity', this.scatterCircle.opacity).attr('fill', 'blue');
 
     // Add Axis
     this.svgContainer.append('g')
       .attr('class', 'axis')
       .attr('transform', 'translate(0,' + (height - margin.bottom) + ')')
       .call(xAxis);
-    this.svgContainer.append('text').attr('class', 'axis')
-      .attr('transform',
-        'translate(' + (margin.left - 20) + ' ,' +
-        (margin.top + 10) + ')')
-      .style('text-anchor', 'middle')
-      .text('Units');
+
     this.svgContainer.append('g')
       .attr('class', 'axis')
       .attr('transform', 'translate(' + margin.left  + ', 0)')
@@ -160,7 +157,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
    * @param dateRange
    */
   onDateRangeChange(dateRange: any) {
-    this.selectedDate = parseDate(dateRange.from);
+    this.selectedDate = parseDefaultDate(dateRange.from);
     this.filter();
     this.draw();
   }
@@ -170,6 +167,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
     if (this.seek) {
       this.pollingService.stopPolling();
     } else {
+      this.getData();
       this.pollingService.startPolling();
     }
   }

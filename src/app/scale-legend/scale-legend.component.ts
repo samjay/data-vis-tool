@@ -1,8 +1,8 @@
 import {Component, Input, OnChanges, OnInit} from '@angular/core';
 import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
-import {rygColors, sensorColors} from '../models/colors';
-import {margin} from '../common/svg-dimensions';
+import {maxOpacity, rygColors, sensorColors} from '../models/colors';
+import {axisLabelPadding, margin} from '../common/svg-dimensions';
 
 @Component({
   selector: 'app-scale-legend',
@@ -12,11 +12,17 @@ import {margin} from '../common/svg-dimensions';
 export class ScaleLegendComponent implements OnInit, OnChanges {
 
   svgContainer;
-  numberOfRects = 50;
+  numberOfRects = 50; // granularity of the scale color gradient
   rects = [];
   rectHeight;
-  height;
+  rectWidth = 50;
+  height = 500;
+  heightMargin = 150;
+  width = 100;
   rectColor;
+  maxPercent = 100;
+  marginLeft = 10;
+  marginTop = 50;
 
   @Input() sensor: Sensor;
   @Input() color: boolean;
@@ -26,35 +32,29 @@ export class ScaleLegendComponent implements OnInit, OnChanges {
   constructor() { }
 
   ngOnInit() {
-    this.height = 500;
-
     this.rectHeight = this.height / this.numberOfRects;
-    this.rectColor = d3.scaleQuantize()
-      .domain([0, 100])
-      .range(rygColors);
+    this.rectColor = d3.scaleQuantize().domain([0, 100]).range(rygColors);
   }
 
   ngOnChanges() {
-    this.height = 500;
     this.rects = [];
     this.rectHeight = this.height / this.numberOfRects;
-    this.rectColor = d3.scaleQuantize()
-      .domain([0, 100])
-      .range(rygColors);
+    this.rectColor = d3.scaleQuantize().domain([0, 100]).range(rygColors);
+
     for (let i = 0; i < this.numberOfRects; i++) {
-      this.rects.push(100 - ((100 / this.numberOfRects) * i));
+      this.rects.push(this.maxPercent - ((this.maxPercent / this.numberOfRects) * i));
     }
     if ( this.svgContainer) {
       this.svgContainer.remove();
     }
-    this.svgContainer = d3.select('#legend').append('svg').attr('width', 100)
-      .attr('height', this.height + 150);
+    this.svgContainer = d3.select('#legend').append('svg').attr('width', this.width)
+      .attr('height', this.height + this.heightMargin);
 
     this.svgContainer.selectAll('rect').data(this.rects).enter()
       .append('rect')
-      .attr('x', 10)
-      .attr('y', (d, i) => (50 + (this.rectHeight * i)))
-      .attr('width', 40)
+      .attr('x', this.marginLeft)
+      .attr('y', (d, i) => (this.marginTop + (this.rectHeight * i)))
+      .attr('width', this.rectWidth)
       .attr('height', this.rectHeight)
       .attr('fill', (d) => {
         if (this.color) {
@@ -66,24 +66,24 @@ export class ScaleLegendComponent implements OnInit, OnChanges {
       })
       .attr('fill-opacity', (d, i) => {
         if (this.color) {
-          return 0.9;
+          return maxOpacity;
         } else {
-          return (0.8 / this.numberOfRects) * (this.numberOfRects - i);
+          return (maxOpacity / this.numberOfRects) * (this.numberOfRects - i);
         }
       });
 
-    const axisScale = d3.scaleLinear().domain([this.min, this.max]).range([this.height + 50, 50]);
+    const axisScale = d3.scaleLinear().domain([this.min, this.max]).range([this.height + margin.bottom, margin.bottom]);
     // Add grid
     this.svgContainer.append('g')
       .attr('class', 'axis')
-      .attr('transform', 'translate(' + 50  + ', ' + 0 + ')')
+      .attr('transform', 'translate(' + (margin.right)  + ', ' + 0 + ')')
       .call(d3.axisRight(axisScale));
 
     // text label for the y axis
     this.svgContainer.append('text').attr('class', 'axis')
       .attr('transform',
-        'translate(' + (margin.left - 5) + ' ,' +
-        (margin.top + 15) + ')')
+        'translate(' + (margin.right) + ' ,' +
+        (margin.top + axisLabelPadding.top) + ')')
       .style('text-anchor', 'middle')
       .text(this.sensor.unit);
   }
