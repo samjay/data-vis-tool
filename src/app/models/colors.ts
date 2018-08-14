@@ -41,12 +41,12 @@ export const rygColors = [
   '#10FF00'];
 
 export const sensorColors = [
-  {type: 'A', color: 'salmon'},
-  {type: 'B', color: 'aquamarine'},
-  {type: 'C', color: 'orchid'},
-  {type: 'G', color: 'seaGreen'},
-  {type: 'H', color: 'green'},
-  {type: 'I', color: 'chocolate'}
+  {type: 'A', color: 'salmon', hardColor: 'indianRed'},
+  {type: 'B', color: 'aquamarine', hardColor: 'lightSeaGreen'},
+  {type: 'C', color: 'orchid', hardColor: 'darkOrchid'},
+  {type: 'G', color: 'seaGreen', hardColor: 'green'},
+  {type: 'H', color: 'green', hardColor: 'darkGreen'},
+  {type: 'I', color: 'chocolate', hardColor: 'saddleBrown'}
 ];
 
 export const maxOpacity = 0.8;

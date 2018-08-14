@@ -24,6 +24,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   yScale;
   dataOpacityScale; // option1: opacity scale for data circles
   dataColorScale; // option2: color scale for data circles
+  dataFrameLengthScale;
 
   minVal;
   maxVal;
@@ -32,12 +33,18 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   pollingSubscription;
   locationCircleRadius = 15;
   dataReady = false;
+  legendSvg;
+
+  option1;
+  option2;
 
   constructor(private router: Router,
               private sensorService: SensorsService,
               private pollingService: PollingService, public ngProgress: NgProgress) { }
 
   ngOnInit() {
+    this.option1 = true;
+    this.option2 = false;
     this.svgContainer = d3.select('#tunnelNetChart').append('svg')
       .attr('width',  width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
@@ -65,9 +72,10 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
           this.sensorSource = sensorNodes;
           this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
           this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
+          this.dataFrameLengthScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 100]);
           this.dataReady = true;
-          this.showData();
           this.pollingService.startPolling();
+          this.showData();
           this.draw();
           this.ngProgress.done();
         });
@@ -75,8 +83,32 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
     });
   }
 
-  draw() {
+  switchOptions(num) {
+    for (let i = 0; i < this.tunnelNet.locations.length; i++) {
+      d3.select('#dataCircle' + this.tunnelNet.locations[i].id).remove();
+      d3.select('#dataFrame').remove();
+      d3.select('#dataRect' + this.tunnelNet.locations[i].id).remove();
+    }
 
+    if (num === 1) {
+      this.option1 = true;
+      this.option2 = false;
+      if (this.svgContainer) {
+        this.svgContainer.remove();
+      }
+      this.svgContainer = d3.select('#tunnelNetChart').append('svg')
+        .attr('width',  width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
+      this.showData();
+      this.draw();
+    } else {
+      this.option1 = false;
+      this.option2 = true;
+      this.showData();
+    }
+  }
+
+  draw() {
     const lineFunction = d3.line().x(d => this.xScale(d.x)).y(d => this.yScale(d.y)).curve(d3.curveLinear);
 
     this.svgContainer.selectAll('path').data(this.tunnelNet.tunnels).enter()
@@ -210,32 +242,82 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       this.sensorSource = sensorNodes;
       this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
       this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
+      this.dataFrameLengthScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 100]);
       this.animateData();
     });
   }
 
   showData() {
+    if (this.option1) {
+      this.svgContainer.selectAll('.dataCircle').data(this.tunnelNet.locations).enter()
+        .append('circle')
+        .attr('class', 'dataCircle')
+        .attr('id', (d) => 'dataCircle' + d.id)
+        .attr('cx', (d) => this.xScale(d.x))
+        .attr('cy', (d) => this.yScale(d.y))
+        .attr('r', 70)
+        // Opacity data:
+        .style('fill', () => {
+          const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+          return sensorColorFilter[0].color;
+        })
+        .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
+        .attr('fill-opacity', (d) => this.dataOpacity(d))
+        .attr('stroke', 'black');
+      // Color data:
+        // .attr('fill', (d) => {
+        //   return this.dataColor(d);
+        // })
+        // .attr('fill-opacity', 0.4);
+    } else if (this.option2) {
+      this.svgContainer.selectAll('.dataFrameRect').data(this.tunnelNet.locations).enter()
+        .append('rect')
+        .attr('id', 'dataFrame')
+        .attr('x', (d) => this.xScale(d.x) - 50)
+        .attr('y', (d) => this.yScale(d.y) + 30)
+        .attr('width', 100)
+        .attr('height', 20)
+        .attr('stroke', 'blue')
+        .attr('stroke-width', 0.4)
+        .attr('fill-opacity', 0.4)
+        .attr('fill', 'white');
 
-    this.svgContainer.selectAll('.dataCircle').data(this.tunnelNet.locations).enter()
-      .append('circle')
-      .attr('class', 'dataCircle')
-      .attr('id', (d) => 'dataCircle' + d.id)
-      .attr('cx', (d) => this.xScale(d.x))
-      .attr('cy', (d) => this.yScale(d.y))
-      .attr('r', 70)
-      // Opacity data:
-      .style('fill', () => {
-        const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
-        return sensorColorFilter[0].color;
-      })
-      .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
-      .attr('fill-opacity', (d) => this.dataOpacity(d))
-      .attr('stroke', 'black');
-    // Color data:
-      // .attr('fill', (d) => {
-      //   return this.dataColor(d);
-      // })
-      // .attr('fill-opacity', 0.4);
+      this.svgContainer.selectAll('.dataRect').data(this.tunnelNet.locations).enter()
+        .append('rect')
+        .attr('id', (d) => 'dataRect' + d.id)
+        .attr('x', (d) => this.xScale(d.x) - 50)
+        .attr('y', (d) => this.yScale(d.y) + 30)
+        .attr('width', (d) => this.dataFrameLength(d))
+        .attr('height', 20)
+        .attr('fill', () => {
+          const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+          return sensorColorFilter[0].hardColor;
+        });
+      this.updateLegend();
+    }
+  }
+
+  updateLegend() {
+    if (this.legendSvg) {
+      this.legendSvg.remove();
+    }
+    this.legendSvg = d3.select('#frameRectlegend').append('svg').attr('width', 300)
+      .attr('height', 300);
+    this.legendSvg.append('rect')
+      .attr('x', 10)
+      .attr('y', 10)
+      .attr('width', 100)
+      .attr('height', 20)
+      .attr('stroke', 'blue')
+      .attr('stroke-width', 0.4)
+      .attr('fill-opacity', 0.4)
+      .attr('fill', 'white');
+
+    // Add grid
+    this.legendSvg.append('g')
+      .attr('class', 'axis')
+      .attr('transform', 'translate(' + 10  + ', ' + 32 + ')')
+      .call(d3.axisBottom(this.dataFrameLengthScale).ticks(3));
 
   }
 
@@ -275,18 +357,32 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   animateData() {
     const animationDuration = 500;
     for (let i = 0; i < this.tunnelNet.locations.length; i++) {
-      const dataCircle = d3.select('#dataCircle' + this.tunnelNet.locations[i].id);
-      dataCircle.
-      transition().duration(animationDuration)
-      // opacity data:
-        .style('fill', () => {
-          const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
-          return sensorColorFilter[0].color;
-        })
-        .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
-        .attr('fill-opacity', (d) => this.dataOpacity(d));
-      // Color data:
-        // .attr('fill', (d) => this.dataColor(d));
+      if (this.option1) {
+        const dataCircle = d3.select('#dataCircle' + this.tunnelNet.locations[i].id);
+        dataCircle.
+        transition().duration(animationDuration)
+        // opacity data:
+          .style('fill', () => {
+            const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+            return sensorColorFilter[0].color;
+          })
+          .attr('stroke-opacity', (d) => this.dataOpacity(d) * 2)
+          .attr('fill-opacity', (d) => this.dataOpacity(d));
+        // Color data:
+          // .attr('fill', (d) => this.dataColor(d));
+      } else if (this.option2) {
+        const dataRect = d3.select('#dataRect' + this.tunnelNet.locations[i].id);
+        dataRect
+          .transition().duration(animationDuration)
+          .attr('width', (d) => this.dataFrameLength(d))
+          .attr('fill', () => {
+            const sensorColorFilter = sensorColors.filter((sC) => sC.type === this.selectedSensorType.id);
+            return sensorColorFilter[0].hardColor;
+          });
+      }
+    }
+    if (this.option2) {
+      this.updateLegend();
     }
   }
 
@@ -300,14 +396,33 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
     return this.dataOpacityScale(this.getCurrentValueOfSelectedType(locationId));
   }
 
+  dataFrameLength(d) {
+    let locationId;
+    if (d.id > 4) { // TODO location temp adjustment
+      locationId = (d.id % 4) + 1;
+    } else {
+      locationId = d.id;
+    }
+    const length = this.dataFrameLengthScale(this.getCurrentValueOfSelectedType(locationId));
+    if (length < 0) {
+      return 0;
+    } else {
+      return length;
+    }
+  }
+
   getCurrentValueOfSelectedType(locationId) {
     const sensors = this.sensorSource.filter((sensorFilter) =>
       sensorFilter.id === locationId + this.selectedSensorType.id);
     const dataSensor = sensors[0];
     if (dataSensor) {
-      return dataSensor.data[dataSensor.data.length - 1].x;
+      if (dataSensor.data[dataSensor.data.length - 1].x) {
+        return dataSensor.data[dataSensor.data.length - 1].x;
+      } else {
+        return this.minVal;
+      }
     } else {
-      return 0;
+      return this.minVal;
     }
   }
 
