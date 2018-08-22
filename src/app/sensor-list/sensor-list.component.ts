@@ -44,6 +44,7 @@ export class SensorListComponent implements OnInit {
     this.sensorService.getLocation(id).subscribe(location => {
       this.location = location;
       this.sensors = location.sensor_list;
+      this.showChart(this.sensors[0]);
       this.ngProgress.done();
     });
   }

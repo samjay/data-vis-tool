@@ -5,6 +5,7 @@ import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
 import {SENSORS} from '../sensor-list/sensors-list';
 import {NgProgress} from 'ngx-progressbar';
+import {ChartService} from '../chart.service';
 
 @Component({
   selector: 'app-sensor-movement',
@@ -48,7 +49,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   grid = {margin: {top: 40}};
 
   constructor(private sensorService: SensorsService,
-              private pollingService: PollingService,
+              private pollingService: PollingService, private chartService: ChartService,
               public ngProgress: NgProgress) { }
 
   ngOnInit() {
@@ -65,19 +66,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     // show acceleration legend
     this.legendSvg = d3.select('#legend').append('svg').attr('width', 200)
       .attr('height', 100);
-    this.legendSvg.append('line')
-      .attr('x1', 10)
-      .attr('y1', 10)
-      .attr('x2', 10 + this.lineLengthScale(this.acceleration.source.max))
-      .attr('y2', 10)
-      .attr('stroke-width', this.accelerationLine.strokeWidth)
-      .attr('stroke', 'blue');
-    const axisScale = d3.scaleLinear().domain([0, this.acceleration.source.max]).range([0, this.acceleration.line.max]);
-    // Add grid
-    this.legendSvg.append('g')
-      .attr('class', 'axis')
-      .attr('transform', 'translate(' + 10  + ', ' + 10 + ')')
-      .call(d3.axisBottom(axisScale));
+
 
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
@@ -105,8 +94,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       this.svgContainer.remove();
     }
 
-    this.svgContainer = d3.select('#sensorPosChart').append('svg').attr('width', this.width)
-      .attr('height', this.height);
+    this.svgContainer = d3.select('#sensorPosChart').append('svg');
+    this.chartService.svgDimensionInit(this.svgContainer, this.width, this.height);
 
     // Add grid
     this.svgContainer.append('g')
@@ -176,6 +165,23 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('height', this.centerNode.height)
       .attr('width', this.centerNode.width)
       .attr('fill', 'navy');
+
+    // add legend
+    const xposition = 1200;
+    const yposition = 50;
+    this.svgContainer.append('line')
+      .attr('x1', xposition)
+      .attr('y1', yposition)
+      .attr('x2', xposition + this.lineLengthScale(this.acceleration.source.max))
+      .attr('y2', yposition)
+      .attr('stroke-width', this.accelerationLine.strokeWidth)
+      .attr('stroke', 'blue');
+    const axisScale = d3.scaleLinear().domain([0, this.acceleration.source.max]).range([0, this.acceleration.line.max]);
+    // Add legend axis
+    this.svgContainer.append('g')
+      .attr('class', 'axis')
+      .attr('transform', 'translate(' + xposition  + ', ' + yposition + ')')
+      .call(d3.axisBottom(axisScale).ticks(5));
 
   }
 

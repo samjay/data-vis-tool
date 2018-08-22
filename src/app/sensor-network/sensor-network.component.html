@@ -2,49 +2,29 @@
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(1)">Option1</button>
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(2)">Option2</button>
 </div>
-<div class="container-fluid" style="margin-left: 100px; margin-top: 40px;">
+<div class="container-fluid" style="margin-left: 10px; margin-top: 40px;">
   <ng-progress [color]="'blue'" [thick]="true"></ng-progress>
-  <h2 class="h2" style="margin-top: 40px;">Sensor Status</h2>
-  <div class="row" style="height: 600px">
-      <div class="col-7">
-      <div id="sensorNetChart"></div>
-      <div id="sensorNetChart2"></div>
+  <h4 class="h4" style="margin-top: 40px;">Sensor Status</h4>
+  <div class="row" style="height: 700px;">
+      <div class="col-lg-9">
+      <div id="sensorNetChart" class="svg-container"></div>
+      <div id="sensorNetChart2" class="svg-container"></div>
       </div>
-      <div class="col-3">
+      <div class="col-lg-1">
         <app-scale-legend [sensor]="batterySensor" [color]="true" [min]="0" [max]="100"></app-scale-legend>
       </div>
   </div>
+  <div *ngIf="selectedLocation">
   <div class="row">
-    <div *ngIf="selectedLocation">
-      <div class="row">
-        <div class="col">
+        <div class="col-5">
           <app-chart [sensor]="signalSensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>
         </div>
-        <div class="col">
+        <div class="col-5">
           <app-chart [sensor]="batterySensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>
         </div>
-      </div>
     </div>
   </div>
 </div>
-<!--<div class="container" style="margin-top: 40px;">-->
-  <!--<h2 class="h2" style="margin-top: 40px;">Sensor Network</h2>  -->
-  <!--<div class="row" style="height: 600px">-->
-      <!--<div id="sensorNetChart2"></div>-->
-  <!--</div>-->
-  <!--<div class="row">-->
-    <!--<div *ngIf="selectedLocation">-->
-      <!--<div class="row">-->
-    <!--<div class="col">-->
-      <!--<app-chart [sensor]="signalSensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>-->
-    <!--</div>-->
-    <!--<div class="col">-->
-      <!--<app-chart [sensor]="batterySensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>-->
-    <!--</div>-->
-      <!--</div>-->
-    <!--</div>-->
-  <!--</div>-->
-<!--</div>-->
 
 
 

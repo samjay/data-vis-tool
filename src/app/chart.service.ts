@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as d3 from 'd3';
-import {margin} from './common/svg-dimensions';
+import {margin, svgViewboxHeight, svgViewboxWidth} from './common/svg-dimensions';
 
 @Injectable({
   providedIn: 'root'
@@ -45,5 +45,11 @@ export class ChartService {
             .text(Math.round(xVal * 100) / 100);
         }
       }});
+  }
+
+  svgDimensionInit(svgContainer: any, width, height) {
+    svgContainer.attr('preserveAspectRatio', 'xMinYMin meet')
+      .attr('viewBox', '0 0 ' + width + ' ' + height)
+      .classed('svg-content', true);
   }
 }

@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import {Sensor} from '../models/sensor';
 import {maxOpacity, rygColors, sensorColors} from '../models/colors';
 import {axisLabelPadding, margin} from '../common/svg-dimensions';
+import {ChartService} from '../chart.service';
 
 @Component({
   selector: 'app-scale-legend',
@@ -29,7 +30,7 @@ export class ScaleLegendComponent implements OnInit, OnChanges {
   @Input() min: number;
   @Input() max: number;
 
-  constructor() { }
+  constructor(private chartService: ChartService) { }
 
   ngOnInit() {
     this.rectHeight = this.height / this.numberOfRects;

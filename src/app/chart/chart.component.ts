@@ -111,8 +111,8 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     const _xRange = [margin.left, _width - margin.right];
     const _yRange = [_height - margin.bottom, margin.bottom];
 
-    this.svgContainer = d3.select('#' + this.chartId).append('svg').attr('width', _width)
-      .attr('height', _height);
+    this.svgContainer = d3.select('#' + this.chartId).append('svg');
+    this.chartService.svgDimensionInit(this.svgContainer, _width, _height);
 
     // x-axis
     const xAxisScale = d3.scaleTime()

@@ -2,24 +2,24 @@
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(1)">Option1</button>
   <button type="button" class="btn btn-outline-info" (click)="switchOptions(2)">Option2</button>
 </div>
-<div class="container-fluid" style="margin-top: 40px; margin-left: 100px">
-  <h2 class="h2" style="margin-top: 40px;">Tunnel Network</h2>
+<div class="container-fluid" style="margin-top: 40px;">
+  <h4 class="h4" style="margin-top: 40px;">Tunnel Network</h4>
   <div class="row">
-    <div class="col-8">
+    <div class="col-lg-9">
       <ng-progress [color]="'blue'" [thick]="true"></ng-progress>
-      <div id="tunnelNetChart">
+      <div id="tunnelNetChart" class="svg-container">
       </div>
     </div>
-    <div class="col-2">
+    <div class="col-md-1">
       <div class="row">
         <select style="width: 150px" class="form-control" [(ngModel)]="selectedSensorType" (change)="typeSelected()">
           <option *ngFor="let type of sensorTypes" [ngValue]="type">{{type.name}}</option>
         </select>
-        <div *ngIf="option2" style="margin-top: 200px" id="frameRectlegend">
+        <div *ngIf="option2" style="margin-top: 150px" id="frameRectlegend">
         </div>
-      </div>
-      <div *ngIf="dataReady && option1" class="row">
-        <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
+        <div *ngIf="dataReady && option1">
+          <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
+        </div>
       </div>
     </div>
   </div>

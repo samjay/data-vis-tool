@@ -4,9 +4,10 @@ import {TunnelNetwork} from '../models/tunnel-network';
 import {Router} from '@angular/router';
 import {SensorsService} from '../sensors.service';
 import {COLORS, rygColors, sensorColors} from '../models/colors';
-import {height, margin, width} from '../common/svg-dimensions';
+import {height, margin, svgViewboxHeight, svgViewboxWidth, width} from '../common/svg-dimensions';
 import {PollingService} from '../polling.service';
 import {NgProgress} from 'ngx-progressbar';
+import {ChartService} from '../chart.service';
 
 @Component({
   selector: 'app-tunnel-network',
@@ -39,15 +40,14 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   option2;
 
   constructor(private router: Router,
-              private sensorService: SensorsService,
+              private sensorService: SensorsService, private chartService: ChartService,
               private pollingService: PollingService, public ngProgress: NgProgress) { }
 
   ngOnInit() {
     this.option1 = true;
     this.option2 = false;
-    this.svgContainer = d3.select('#tunnelNetChart').append('svg')
-      .attr('width',  width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
+    this.svgContainer = d3.select('#tunnelNetChart').append('svg');
+    this.chartService.svgDimensionInit(this.svgContainer, svgViewboxWidth, svgViewboxHeight);
 
     this.ngProgress.start();
     this.sensorService.getTunnelNetwork().subscribe(tunnelNetwork => {
@@ -96,9 +96,8 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       if (this.svgContainer) {
         this.svgContainer.remove();
       }
-      this.svgContainer = d3.select('#tunnelNetChart').append('svg')
-        .attr('width',  width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom).attr('style', 'margin-top 30px');
+      this.svgContainer = d3.select('#tunnelNetChart').append('svg');
+      this.chartService.svgDimensionInit(this.svgContainer, svgViewboxWidth, svgViewboxHeight);
       this.showData();
       this.draw();
     } else {

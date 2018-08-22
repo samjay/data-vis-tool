@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
-import {height, margin, width} from '../common/svg-dimensions';
+import {height, margin, svgViewboxHeight, svgViewboxWidth, width} from '../common/svg-dimensions';
 import {rygColors} from '../models/colors';
 import {SENSORS} from '../sensor-list/sensors-list';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
 import {PollingService} from '../polling.service';
 import {NgProgress} from 'ngx-progressbar';
+import {ChartService} from '../chart.service';
 
 @Component({
   selector: 'app-sensor-network',
@@ -53,7 +54,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   circleNormalRadius = 15;
 
   constructor(private sensorService: SensorsService,
-              private pollingService: PollingService,
+              private pollingService: PollingService, private chartService: ChartService,
               public ngProgress: NgProgress) { }
 
   ngOnInit() {
@@ -90,13 +91,12 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   }
 
   draw() {
-    this.svgContainer = d3.select('#sensorNetChart').append('svg')
-      .attr('width',  width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom + this.heightPadding).attr('style', 'margin-top 30px');
+    this.svgContainer = d3.select('#sensorNetChart').append('svg');
+    this.chartService.svgDimensionInit(this.svgContainer, svgViewboxWidth, svgViewboxHeight);
 
     this.xScale = d3.scaleLinear()
       .domain([1, 1000])
-      .range([margin.left, width]);
+      .range([margin.left, width + 300]);
 
     this.yScale = d3.scaleLinear()
       .domain([1, 700])
@@ -162,13 +162,12 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
     const axisXPos = 485;
     const axisPadding = 25;
 
-    this.svgContainer = d3.select('#sensorNetChart2').append('svg')
-      .attr('width',  width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom + this.heightPadding).attr('style', 'margin-top 30px');
+    this.svgContainer = d3.select('#sensorNetChart').append('svg');
+    this.chartService.svgDimensionInit(this.svgContainer, svgViewboxWidth, svgViewboxHeight);
 
     this.xScale = d3.scaleLinear()
       .domain([1, 1000]) // TODO get domain from data
-      .range([margin.left, width]);
+      .range([margin.left, width + 300]);
 
     this.yScale = d3.scaleLinear()
       .domain([1, 700]) // TODO get domain from data
@@ -176,7 +175,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
 
     this.barLengthScale = d3.scaleLinear() // TODO correct domain and range
       .domain([0, 100])
-      .range([1, 350]);
+      .range([1, 450]);
 
     this.circleColor = d3.scaleQuantize()
       .domain([0, 100])
