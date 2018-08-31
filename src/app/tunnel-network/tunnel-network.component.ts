@@ -21,6 +21,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
 
   // d3
   svgContainer;
+  zoom;
   xScale;
   yScale;
   dataOpacityScale; // option1: opacity scale for data circles
@@ -108,6 +109,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   draw() {
+    this.addZoom();
     const lineFunction = d3.line().x(d => this.xScale(d.x)).y(d => this.yScale(d.y)).curve(d3.curveLinear);
 
     this.svgContainer.selectAll('path').data(this.tunnelNet.tunnels).enter()
@@ -128,6 +130,22 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       .on('click', (d, i) => this.goToSensorLocation(d));
   }
 
+  addZoom() {
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 10])
+      .on('zoom', () => {
+        this.svgContainer.attr('transform', d3.event.transform);
+      });
+
+    this.svgContainer.call(this.zoom);
+
+  }
+
+  resetZoom() {
+    this.svgContainer.transition()
+      .duration(750)
+      .call(this.zoom.transform, d3.zoomIdentity);
+  }
 
   /**
    * show details on mouseover of location

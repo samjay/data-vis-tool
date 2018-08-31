@@ -15,6 +15,11 @@ import {ChartService} from '../chart.service';
 export class SensorMovementComponent implements OnInit, OnDestroy {
 
   svgContainer;
+  zoom;
+  xGrid;
+  xGridAxis;
+  yGrid;
+  yGridAxis;
   legendSvg;
   /*
   sensor data array from source
@@ -67,7 +72,6 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     this.legendSvg = d3.select('#legend').append('svg').attr('width', 200)
       .attr('height', 100);
 
-
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
 
     this.ngProgress.start();
@@ -97,19 +101,18 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     this.svgContainer = d3.select('#sensorPosChart').append('svg');
     this.chartService.svgDimensionInit(this.svgContainer, this.width, this.height);
 
+    this.addZoom();
     // Add grid
-    this.svgContainer.append('g')
+    this.xGridAxis = d3.axisBottom(this.xScale).tickSize( this.height , 0, 0);
+    this.xGrid = this.svgContainer.append('g')
       .attr('class', 'grid')
       .attr('transform', 'translate(' + 0 + ', ' + -margin.top + ')')
-      .call(d3.axisBottom(this.xScale)
-        .tickSize( this.height , 0, 0)
-      );
-    this.svgContainer.append('g')
+      .call(this.xGridAxis);
+    this.yGridAxis = d3.axisLeft(this.yScale).tickSize( - this.width , 0, 0);
+    this.yGrid = this.svgContainer.append('g')
       .attr('class', 'grid')
       .attr('transform', 'translate(' + margin.left + ', 0)')
-      .call(d3.axisLeft(this.yScale)
-        .tickSize( - this.width , 0, 0)
-      );
+      .call(this.yGridAxis);
 
     // add position circles
     this.svgContainer.selectAll('circle').data(this.positionData).enter()
@@ -183,6 +186,23 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('transform', 'translate(' + xposition  + ', ' + yposition + ')')
       .call(d3.axisBottom(axisScale).ticks(5));
 
+  }
+
+  addZoom() {
+    this.zoom = d3.zoom()
+      .scaleExtent([1, 10])
+      .on('zoom', () => {
+        this.svgContainer.attr('transform', d3.event.transform);
+      });
+
+    this.svgContainer.call(this.zoom);
+
+  }
+
+  resetZoom() {
+    this.svgContainer.transition()
+      .duration(750)
+      .call(this.zoom.transform, d3.zoomIdentity);
   }
 
   /**
