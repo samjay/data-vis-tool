@@ -1,6 +1,6 @@
 <div class="btn-group-horizontal" role="group">
-  <button type="button" class="btn btn-outline-info" (click)="switchOptions(1)">Option1</button>
-  <button type="button" class="btn btn-outline-info" (click)="switchOptions(2)">Option2</button>
+  <button *ngFor="let i of [1,2,3,4,5,6,7]" type="button" class="btn btn-outline-info"
+          (click)="switchOptions(i)">Option{{i}}</button>
 </div>
 <div class="container-fluid" style="margin-top: 40px;">
   <h4 class="h4" style="margin-top: 40px;">Tunnel Network</h4>
@@ -16,10 +16,14 @@
         <select style="width: 150px" class="form-control" [(ngModel)]="selectedSensorType" (change)="typeSelected()">
           <option *ngFor="let type of sensorTypes" [ngValue]="type">{{type.name}}</option>
         </select>
-        <div *ngIf="option2" style="margin-top: 150px" id="frameRectlegend">
+        <div *ngIf="selectedOption === 3 || selectedOption === 4 || selectedOption === 7"
+             style="margin-top: 150px" id="frameRectlegend">
         </div>
-        <div *ngIf="dataReady && option1">
+        <div *ngIf="dataReady && (selectedOption === 1 || selectedOption === 6)">
           <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
+        </div>
+        <div *ngIf="dataReady && (selectedOption === 2)">
+          <app-scale-legend [sensor]="selectedSensorType" [color]="true" [min]="minVal" [max]="maxVal"></app-scale-legend>
         </div>
       </div>
     </div>
