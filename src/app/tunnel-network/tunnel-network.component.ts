@@ -37,6 +37,10 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   dataReady = false;
   legendSvg;
   selectedOption = 1;
+  realTimePlay = {
+    buttonName: 'Play',
+    playStatus: false
+  };
 
   constructor(private router: Router,
               private sensorService: SensorsService, private chartService: ChartService,
@@ -71,7 +75,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
           this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(rygColors);
           this.dataFrameLengthScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 100]);
           this.dataReady = true;
-          this.pollingService.startPolling();
+          // this.pollingService.startPolling(); TODO: uncomment after user study
           this.showData();
           this.draw();
           this.ngProgress.done();
@@ -138,6 +142,21 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
     this.svgContainer.transition()
       .duration(750)
       .call(this.zoom.transform, d3.zoomIdentity);
+  }
+
+  /**
+   * TODO: remove after user study.
+   */
+  playRealTime() {
+    if (!this.realTimePlay.playStatus) {
+      this.realTimePlay.playStatus = true;
+      this.realTimePlay.buttonName = 'Pause';
+      this.pollingService.startPolling();
+    } else {
+      this.realTimePlay.playStatus = false;
+      this.realTimePlay.buttonName = 'Play';
+      this.pollingService.stopPolling();
+    }
   }
 
   /**

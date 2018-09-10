@@ -52,6 +52,10 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   option2;
   pollingSubscription;
   circleNormalRadius = 15;
+  realTimePlay = {
+    buttonName: 'Play',
+    playStatus: false
+  };
 
   constructor(private sensorService: SensorsService,
               private pollingService: PollingService, private chartService: ChartService,
@@ -67,7 +71,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       this.prepare();
       this.draw();
       this.ngProgress.done();
-      this.pollingService.startPolling();
+      // this.pollingService.startPolling(); TODO: uncomment after user study
     });
   }
 
@@ -219,6 +223,21 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .call(d3.axisTop(axisScale)
         .tickSize( - height + margin.top , 0, 0)
       );
+  }
+
+  /**
+   * TODO: remove after user study
+   */
+  playRealTime() {
+    if (!this.realTimePlay.playStatus) {
+      this.realTimePlay.playStatus = true;
+      this.realTimePlay.buttonName = 'Pause';
+      this.pollingService.startPolling();
+    } else {
+      this.realTimePlay.playStatus = false;
+      this.realTimePlay.buttonName = 'Play';
+      this.pollingService.stopPolling();
+    }
   }
 
   animateElements() {
