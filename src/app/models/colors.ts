@@ -6,6 +6,7 @@ export const COLORS = [ d3.rgb(Math.random() * 255, Math.random() * 255, Math.ra
   d3.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255),
   d3.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255)];
 
+export const colorTypes = { ryg: 'RYG', btr: 'BTR', single: 'SINGLE'};
 export const rygColors = [
   '#FF0000',
   '#FF1000',
@@ -39,6 +40,26 @@ export const rygColors = [
   '#30FF00',
   '#20FF00',
   '#10FF00'];
+
+export const bToRColors = [
+  '#1A09BE',
+  '#1B27A7',
+  '#1D4590',
+  '#1E6379',
+  '#208162',
+  '#229F4B',
+  '#23BD34',
+  '#25DB1D',
+  '#27F906',
+  '#41DB06',
+  '#5BBD06',
+  '#759F06',
+  '#908106',
+  '#AA6306',
+  '#C44506',
+  '#DE2706',
+  '#F90906'
+];
 
 export const sensorColors = [
   {type: 'A', color: 'salmon', hardColor: 'indianRed'},

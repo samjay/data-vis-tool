@@ -2,7 +2,6 @@ import { Component, OnInit} from '@angular/core';
 import { Sensor } from '../models/sensor';
 import { SensorsService } from '../sensors.service';
 import {Chart} from '../models/chart';
-import {DataFileService} from '../data-file.service';
 import {ActivatedRoute} from '@angular/router';
 import {SensorLocation} from '../models/sensor-location';
 import {NgProgress} from 'ngx-progressbar';

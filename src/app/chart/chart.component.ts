@@ -50,7 +50,9 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => {
       this.getData();
     });
-    this.pollingService.startPolling();
+    if (!this.sizeSmall) { // TODO remove after experiment
+      this.pollingService.startPolling();
+    }
   }
 
   ngOnChanges() {
@@ -123,7 +125,7 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     // y-axis
     const yMax = d3.max(this.filteredData, (d) => d.y);
     const yScale = d3.scaleLinear()
-      .domain([0, yMax])
+      .domain([this.sensor.range.min, this.sensor.range.max])
       .range(_yRange);
     const yAxis = d3.axisLeft(yScale);
 

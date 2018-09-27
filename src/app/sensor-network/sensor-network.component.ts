@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
 import {height, margin, svgViewboxHeight, svgViewboxWidth, width} from '../common/svg-dimensions';
-import {rygColors} from '../models/colors';
+import {colorTypes, rygColors} from '../models/colors';
 import {SENSORS} from '../sensor-list/sensors-list';
 import {SensorLocation} from '../models/sensor-location';
 import {SensorsService} from '../sensors.service';
@@ -17,6 +17,7 @@ import {ChartService} from '../chart.service';
 export class SensorNetworkComponent implements OnInit, OnDestroy {
 
   svgContainer;
+  keySvgContainer;
   xScale;
   yScale;
   /**
@@ -48,22 +49,21 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   heightPadding = 200;
   sensorSource;
   currentSensorValues = [];
-  option1;
-  option2;
+  option1 = true;
+  option2 = false;
   pollingSubscription;
   circleNormalRadius = 15;
   realTimePlay = {
     buttonName: 'Play',
     playStatus: false
   };
+  colorTypes = colorTypes;
 
   constructor(private sensorService: SensorsService,
               private pollingService: PollingService, private chartService: ChartService,
               public ngProgress: NgProgress) { }
 
   ngOnInit() {
-    this.option1 = true;
-    this.option2 = false;
     this.pollingSubscription = this.pollingService.pollingItem.subscribe( () => this.pollData());
     this.ngProgress.start();
     this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
@@ -155,7 +155,57 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .attr('y', this.yScale(this.centerNode.y) - 22)
       .attr('height', 40)
       .attr('width', 45)
+      .attr('fill', 'navy')
+      .on('mouseover', (d, i) => this.showCenterDetails(d, i, this.xScale(this.centerNode.x) - 20,
+        this.yScale(this.centerNode.y) - 22))
+      .on('mouseout', (d, i) => this.hideCenterDetails(i));
+
+    // Show key
+
+    this.keySvgContainer = d3.select('#signalKey').append('svg').attr('width', 800)
+      .attr('height', 200);
+
+    this.keySvgContainer.append('line')
+      .attr('x1', 22 + 28)
+      .attr('y1', 50)
+      .attr('x2', 50 + this.getxVal(this.radialScale(0), 0))
+      .attr('y2', 50)
+      .style('stroke-width', (d) => this.lineWidthScale(0))
+      .style('stroke', 'green');
+
+    this.keySvgContainer.append('rect')
+      .attr('x', 28)
+      .attr('y', 30)
+      .attr('height', 40)
+      .attr('width', 45)
       .attr('fill', 'navy');
+
+    this.keySvgContainer.append('text')
+      .attr('x', 0)
+      .attr('y', 50)
+      .text('0')
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'black');
+
+    this.keySvgContainer.append('line')
+      .attr('x1', 22 + 28)
+      .attr('y1', 110)
+      .attr('x2', 50 +  this.getxVal(this.radialScale(100), 0))
+      .attr('y2', 110)
+      .style('stroke-width', (d) => this.lineWidthScale(100))
+      .style('stroke', 'green');
+
+    this.keySvgContainer.append('rect')
+      .attr('x', 28)
+      .attr('y', 90)
+      .attr('height', 40)
+      .attr('width', 45)
+      .attr('fill', 'navy');
+
+    this.keySvgContainer.append('text')
+      .attr('x', 0)
+      .attr('y', 110)
+      .text('100')
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'black');
 
   }
 
@@ -204,16 +254,19 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .attr('r', 15)
       .attr('fill', 'white').attr('stroke', 'black').attr('stroke-width', 4)
       .each((d, i) => this.showBars(d, i, xPos2,  i * ( height / this.currentSensorValues.length) + margin.bottom))
+      .on('mouseover', (d, i) => this.showDetails(d, i, xPos2, i * ( height / this.currentSensorValues.length) + margin.bottom))
       .on('mouseout', (d, i) => this.hideDetails(d, i))
       .on('click', (d, i) => this.showChart(d, xPos2, i * ( height / this.currentSensorValues.length) + margin.bottom));
 
-    // add center node TODO show tooltip
+    // add center node
     this.svgContainer.append('rect')
       .attr('x', xPos1 - this.centerNode.width / 2)
       .attr('y', (height / 2) - this.centerNode.height / 2)
       .attr('height', this.centerNode.height)
       .attr('width', this.centerNode.width)
-      .attr('fill', 'navy');
+      .attr('fill', 'navy')
+      .on('mouseover', (d, i) => this.showCenterDetails(d, i, xPos1 - this.centerNode.width / 2, (height / 2) - this.centerNode.height / 2))
+      .on('mouseout', (d, i) => this.hideCenterDetails(i));
 
     const axisScale = d3.scaleLinear().domain([0, 100]).range([axisXPos, axisXPos + this.barLengthScale(100)]);
     // Add grid
@@ -223,6 +276,31 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .call(d3.axisTop(axisScale)
         .tickSize( - height + margin.top , 0, 0)
       );
+  }
+
+  showCenterDetails(d, i, x, y) {
+    const animationDuration = 500;
+    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 100, height: 20}};
+    const toolTipText = {padding: {x: 33, y: 10}};
+
+    // Add background rectangle and animate
+    this.svgContainer.append('rect').attr('id', 'r' + i)
+      .attr('x', () => x + toolTipRect.padding.x)
+      .attr('y', () => y - toolTipRect.padding.y)
+      .attr('width', toolTipRect.pre.width).attr('height', toolTipRect.post.height)
+      .attr('fill', 'darkblue')
+      .transition().duration(animationDuration)
+      .attr('width', toolTipRect.post.width).attr('height', toolTipRect.post.height);
+
+    // add text
+    this.svgContainer.append('text').attr('id', 't1' + i)
+      .attr('x', () => x + toolTipText.padding.x)
+      .attr('y', () => y - toolTipText.padding.y)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text('Central Node')
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
+      .attr('fill-opacity', 1);
   }
 
   /**
@@ -263,16 +341,19 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
         const batBar = d3.select('#batBar' + i);
         const sigBar = d3.select('#sigBar' + i);
 
-        batBar.transition().duration(animationDuration)
-          .attr('width', this.barLengthScale(this.currentSensorValues[i].signal))
-          .attr('fill', this.circleColor(this.currentSensorValues[i].signal));
         sigBar.transition().duration(animationDuration)
-          .attr('width', this.barLengthScale(this.currentSensorValues[i].battery))
-          .attr('fill', this.circleColor(this.currentSensorValues[i].battery));
+          .attr('width', this.barLengthScale(this.positiveBarLength(this.currentSensorValues[i].signal)))
+          .attr('fill', this.circleColor(this.positiveBarLength(this.currentSensorValues[i].signal)));
+        batBar.transition().duration(animationDuration)
+          .attr('width', this.barLengthScale(this.positiveBarLength(this.currentSensorValues[i].battery)))
+          .attr('fill', this.circleColor(this.positiveBarLength(this.currentSensorValues[i].battery)));
       }
     }
   }
 
+  positiveBarLength(val) {
+    return val <= 0 ? 0 : val;
+  }
 
 
 
@@ -317,7 +398,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
    */
   showDetails(d, i, x, y) {
     const animationDuration = 500;
-    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 160, height: 20}};
+    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 160, height: 40}};
     const toolTipText = {padding: {x: 33, y: 10}};
 
     // Add background rectangle and animate
@@ -334,11 +415,21 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       .attr('x', () => x + toolTipText.padding.x)
       .attr('y', () => y - toolTipText.padding.y)
       .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text('Location: ' + (i + 1))
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
+      .attr('fill-opacity', 1);
+
+    this.svgContainer.append('text').attr('id', 't2' + d.x + '-' + d.y + '-' + i)
+      .attr('x', () => x + toolTipText.padding.x)
+      .attr('y', () => y - toolTipText.padding.y + 15)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
       .text('Signal: ' + Math.round(this.currentSensorValues[i].signal)
         + ' | Battery: ' + Math.round(this.currentSensorValues[i].battery))
       .attr('fill-opacity', 0.1)
       .transition().delay(200).duration(animationDuration)
       .attr('fill-opacity', 1);
+
   }
 
   showBars(d, i, x, y) {
@@ -415,6 +506,11 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
     d3.select('#t1' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#t2' + d.x + '-' + d.y + '-' + i).remove();
     d3.select('#r' + d.x + '-' + d.y + '-' + i).remove();
+
+  }
+  hideCenterDetails(i) {
+    d3.select('#t1' + i).remove();
+    d3.select('#r' + i).remove();
   }
 
   showChart(d, x, y) {
@@ -438,6 +534,9 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
   switchOptions(num) {
     if (this.svgContainer) {
       this.svgContainer.remove();
+    }
+    if (this.keySvgContainer) {
+      this.keySvgContainer.remove();
     }
     this.selectedLocation = null;
     if (num === 1) {

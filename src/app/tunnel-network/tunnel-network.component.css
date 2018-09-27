@@ -12,3 +12,13 @@
   top: 0;
   left: 0;
 }
+* >>> .axis {
+  font: 8px Verdana;
+  font-style: oblique;
+}
+* >>> .axis path,
+* >>> .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
