@@ -7,8 +7,8 @@
   <div class="row">
     <div class="col-lg-9">
       <ng-progress [color]="'blue'" [thick]="true"></ng-progress>
-      <button type="button" class="btn btn-outline-info"
-              (click)="playRealTime()">{{realTimePlay.buttonName}}</button>
+      <!--<button type="button" class="btn btn-outline-info"-->
+              <!--(click)="playRealTime()">{{realTimePlay.buttonName}}</button>-->
       <div id="tunnelNetChart" class="svg-container">
       </div>
     </div>
@@ -20,12 +20,12 @@
         <div *ngIf="selectedOption === 3 || selectedOption === 4 || selectedOption === 7"
              style="margin-top: 150px" id="frameRectlegend">
         </div>
-        <div *ngIf="dataReady && (selectedOption === 1 || selectedOption === 6)">
-          <app-scale-legend [sensor]="selectedSensorType" [color]="false" [min]="minVal" [max]="maxVal"></app-scale-legend>
+        <div *ngIf="selectedOption === 1 || selectedOption === 6 || selectedOption === 2">
+          <app-scale-legend [sensor]="selectedSensorType" [color]="legendColor" [min]="minVal" [max]="maxVal"></app-scale-legend>
         </div>
-        <div *ngIf="dataReady && (selectedOption === 2)">
-          <app-scale-legend [sensor]="selectedSensorType" [color]="true" [min]="minVal" [max]="maxVal"></app-scale-legend>
-        </div>
+        <!--<div *ngIf="selectedOption === 2">-->
+          <!--<app-scale-legend [sensor]="selectedSensorType" [color]="colorTypes.btr" [min]="minVal" [max]="maxVal"></app-scale-legend>-->
+        <!--</div>-->
       </div>
     </div>
   </div>

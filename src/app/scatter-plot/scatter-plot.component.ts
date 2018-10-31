@@ -104,7 +104,7 @@ export class ScatterPlotComponent implements OnInit, OnChanges, OnDestroy {
     const daysBefore30 = new Date();
     this.fromDate = this.preparedData[0].date;
     this.toDate = this.preparedData[this.preparedData.length - 1].date;
-    daysBefore30.setTime(this.selectedDate.getTime() - (30 * oneDay));
+    daysBefore30.setTime(this.selectedDate.getTime() - (120 * oneDay));
     this.filteredData = this.preparedData.filter((d) =>
       d.date <= this.selectedDate && d.date >= daysBefore30);
   }

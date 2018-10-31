@@ -9,3 +9,7 @@
   stroke-width: 0.7;
   fill: none;
 }
+
+.bigLetter {
+  font: 25px Verdana;
+}

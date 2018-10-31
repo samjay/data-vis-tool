@@ -4,9 +4,9 @@
   <h5 class="h5">{{sensor.name}}</h5>
   <h6 class="h6">Sensor key {{sensor.id}} Location {{location.id}}</h6>
   </div>
-  <div [id]="chartId" class="svg-container"></div>
+  <div [id]="chartId" class="svg-container" style="width: 880px; height: 650px"></div>
   <div *ngIf="!sizeSmall">
-  <input type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Seek Chart </div>
+  <input class="bigLetter" type="checkbox" [(ngModel)]="seek" (click)="toggleSeek()"> Date Slider </div>
 
   <div *ngIf="seek">
     <app-date-slider [single]="false" *ngIf="prepared" [small]="sizeSmall"

@@ -7,13 +7,17 @@
   <h4 class="h4" style="margin-top: 40px;">Sensor Status</h4>
   <div class="row" style="height: 700px;">
       <div class="col-lg-9">
-        <button type="button" class="btn btn-outline-info"
-                (click)="playRealTime()">{{realTimePlay.buttonName}}</button>
+        <!--<button type="button" class="btn btn-outline-info"-->
+                <!--(click)="playRealTime()">{{realTimePlay.buttonName}}</button>-->
       <div id="sensorNetChart" class="svg-container"></div>
       <div id="sensorNetChart2" class="svg-container"></div>
       </div>
-      <div class="col-lg-1">
-        <app-scale-legend [sensor]="batterySensor" [color]="true" [min]="0" [max]="100"></app-scale-legend>
+      <div *ngIf="option1" class="col-lg-1">
+        <h6 class="h6">Key</h6>
+        Signal:
+        <div id="signalKey"></div>
+        Battery:
+        <app-scale-legend [sensor]="batterySensor" [color]="colorTypes.ryg" [min]="0" [max]="100"></app-scale-legend>
       </div>
   </div>
   <div *ngIf="selectedLocation">
@@ -21,7 +25,7 @@
         <div class="col-5">
           <app-chart [sensor]="signalSensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>
         </div>
-        <div class="col-5">
+        <div class="col-5" style="margin-left: 30px">
           <app-chart [sensor]="batterySensor" [location]="selectedLocation" [sizeSmall]="true"></app-chart>
         </div>
     </div>

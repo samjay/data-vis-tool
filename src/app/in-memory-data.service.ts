@@ -10,11 +10,23 @@ import {CHARTS} from './chart/chart-list';
 export class InMemoryDataService implements InMemoryDbService {
   csvFileData = [];
   sensordataList = [];
+  tempIndex = -45;
+  pressureIndex = -45;
+  batteryIndex1 = -45;
+  batteryIndex2 = -45;
+  batteryIndex3 = -45;
+  batteryIndex4 = -45;
+  humidityIndex = -45;
+  latScale;
+  longScale;
   createDb() {
     d3.csv('assets/Concentration - Weekly.csv').then((data) => {
       this.csvFileData = data;
       this.createSensorData();
     });
+
+    this.latScale = d3.scaleLinear().domain([0, 500]).range([9.200, 9.280]);
+    this.longScale = d3.scaleLinear().domain([0, 500]).range([48.796, 48.9]);
 
     const locations: SensorLocation[] = [
       { id: 1,
@@ -64,15 +76,15 @@ export class InMemoryDataService implements InMemoryDbService {
     const tunnel3: Tunnel = { locations: [locations[4], locations[3], locations[5], locations[6]]};
     const tunnel4: Tunnel = { locations: [locations[7], locations[3]]};
     const SENSORSLIST: Sensor[] = [
-      {id: 'A', name: 'Temperature', chart: CHARTS[1], status_ok: true, unit: '°celsius', range: {min: -15, max: 50}},
+      {id: 'A', name: 'Temperature', chart: CHARTS[1], status_ok: true, unit: '°C', range: {min: -15, max: 50}},
       {id: 'B', name: 'Humidity', chart: CHARTS[1], status_ok: true, unit: '%' , range: {min: 1, max: 100}},
-      {id: 'C', name: 'Pressure', chart: CHARTS[1], status_ok: true, unit: 'Pa', range: {min: 90000, max: 120000}},
+      {id: 'C', name: 'Pressure', chart: CHARTS[1], status_ok: true, unit: 'kPa', range: {min: 90, max: 120}},
       {id: 'D', name: 'Position', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 1000}},
       {id: 'E', name: 'Gyroscope', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 100} },
       {id: 'F', name: 'GPS', chart: CHARTS[2], status_ok: true, unit: '', range: {min: 0, max: 1000}},
       {id: 'G', name: 'Battery', chart: CHARTS[1], status_ok: true, unit: '%', range: {min: 0, max: 100}},
       {id: 'H', name: 'Signal', chart: CHARTS[1], status_ok: true, unit: '%' , range: {min: 0, max: 100}},
-      {id: 'I', name: 'People', chart: CHARTS[2], status_ok: true, unit: 'number' , range: {min: 0, max: 15}},
+      {id: 'I', name: 'People', chart: CHARTS[2], status_ok: true, unit: '' , range: {min: 0, max: 15}},
       {id: 'J', name: 'Accelorometer', chart: CHARTS[2], status_ok: true, unit: '', range: {min: -16, max: 16} }
     ];
     const overViewSensors = [SENSORSLIST[0], SENSORSLIST[1], SENSORSLIST[2], SENSORSLIST[8]];
@@ -127,56 +139,60 @@ export class InMemoryDataService implements InMemoryDbService {
 
     this.csvFileData.forEach((d) => {
       if (d.SITE_ID === 'BEL116') {
-        sensor1tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
-        sensor1humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
-        sensor1presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor1btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
-        sensor1signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor1tempData.push({'timeStamp': d.DATEOFF, 'x': this.temperatureAdjustment(d.SO4_CONC)});
+        sensor1humData.push({'timeStamp': d.DATEOFF, 'x': this.humidityAdjustment(d.SO2_CONC)});
+        sensor1presData.push({'timeStamp': d.DATEOFF, 'x': this.pressureDecrease()});
+        sensor1btrData.push({'timeStamp': d.DATEOFF, 'x': this.lowbatSig()});
+        sensor1signalData.push({'timeStamp': d.DATEOFF, 'x': this.lowbatSig()});
         sensor1posData.push({'timeStamp': d.DATEOFF,
-          'x': (Number(d.SO2_CONC) * 10) + 40, 'y': Number(d.SO4_CONC) + 40, 'z': Number(d.SO2_CONC)});
+          'x': this.latScale((Number(d.SO2_CONC) * 10) + 40),
+          'y': this.longScale(Number(d.SO4_CONC) + 40), 'z': Number(d.SO2_CONC)});
         sensor1gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
         sensor1accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
           'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
-        sensor1pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
+        sensor1pplData.push({'timeStamp': d.DATEOFF, 'x': this.people2to3()});
       }
       if (d.SITE_ID === 'HWF187') {
-        sensor2tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
-        sensor2humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
-        sensor2presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor2btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
-        sensor2signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor2tempData.push({'timeStamp': d.DATEOFF, 'x': this.temperatureAdjustment(d.SO4_CONC)});
+        sensor2humData.push({'timeStamp': d.DATEOFF,
+          'x': this.humidityLimiterLoc2(this.humidityAdjustment(d.SO2_CONC))});
+        sensor2presData.push({'timeStamp': d.DATEOFF, 'x': this.pressureAdjustment(d.NO3_CONC)});
+        sensor2btrData.push({'timeStamp': d.DATEOFF, 'x': this.batteryDrain2(70)});
+        sensor2signalData.push({'timeStamp': d.DATEOFF, 'x': this.batteryAdjustment(d.TNO3_CONC)});
         sensor2posData.push({'timeStamp': d.DATEOFF,
-          'x': Number(d.SO2_CONC) + 280, 'y': (Number(d.SO4_CONC) * 5) + 200, 'z': Number(d.SO2_CONC)});
-        sensor2accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
-          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
+          'x': this.latScale(Number(d.SO2_CONC) + 280), 'y': this.longScale((Number(d.SO4_CONC) * 5) + 200),
+          'z': Number(d.SO2_CONC)});
+        sensor2accData.push({'timeStamp': d.DATEOFF,
+          'x': this.highestAcceleration(this.accelrometerAdjustment(Number(d.SO2_CONC))),
+          'y': this.highestAcceleration(this.accelrometerAdjustment(Number(d.SO4_CONC))), 'z': Number(d.SO2_CONC)});
         sensor2gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
-        sensor2pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
+        sensor2pplData.push({'timeStamp': d.DATEOFF, 'x': 7});
       }
       if (d.SITE_ID === 'BBE401') {
-        sensor3tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
-        sensor3humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
-        sensor3presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor3btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
-        sensor3signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor3tempData.push({'timeStamp': d.DATEOFF, 'x': this.temperatureIncrease()});
+        sensor3humData.push({'timeStamp': d.DATEOFF, 'x': this.humidityAdjustment(d.SO2_CONC)});
+        sensor3presData.push({'timeStamp': d.DATEOFF, 'x': this.pressureAdjustment(d.NO3_CONC)});
+        sensor3btrData.push({'timeStamp': d.DATEOFF, 'x': this.batteryDrain3(40)});
+        sensor3signalData.push({'timeStamp': d.DATEOFF, 'x': this.consistentSignal()});
         sensor3posData.push({'timeStamp': d.DATEOFF,
-          'x': (Number(d.SO2_CONC) * 10) + 100, 'y': (Number(d.SO4_CONC) * 10) + 450, 'z': Number(d.SO2_CONC)});
-        sensor3accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
-          'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
+          'x': this.latScale(100), 'y': this.longScale(450), 'z': Number(d.SO2_CONC)});
+        sensor3accData.push({'timeStamp': d.DATEOFF, 'x': 0, 'y': 0, 'z': 0});
         sensor3gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
-        sensor3pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
+        sensor3pplData.push({'timeStamp': d.DATEOFF, 'x': this.peopleAdjustment()});
       }
       if (d.SITE_ID === 'PIN414') {
-        sensor4tempData.push({'timeStamp': d.DATEOFF, 'x': d.SO4_CONC});
-        sensor4humData.push({'timeStamp': d.DATEOFF, 'x': d.SO2_CONC});
-        sensor4presData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC});
-        sensor4btrData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.CA_CONC * 100)});
-        sensor4signalData.push({'timeStamp': d.DATEOFF, 'x': this.lessThanHundred(d.TNO3_CONC * 20)});
+        sensor4tempData.push({'timeStamp': d.DATEOFF, 'x': this.temperatureAdjustment(d.SO4_CONC)});
+        sensor4humData.push({'timeStamp': d.DATEOFF, 'x': this.humidityIncrease()});
+        sensor4presData.push({'timeStamp': d.DATEOFF, 'x': this.pressureAdjustment(d.NO3_CONC)});
+        sensor4btrData.push({'timeStamp': d.DATEOFF, 'x': this.batteryDrain4(60)});
+        sensor4signalData.push({'timeStamp': d.DATEOFF, 'x': this.batteryAdjustment(d.TNO3_CONC)});
         sensor4posData.push({'timeStamp': d.DATEOFF,
-          'x': (Number(d.SO2_CONC) * 5) + 450, 'y': (Number(d.SO4_CONC) * 50) + 100, 'z': Number(d.SO2_CONC)});
+          'x': this.latScale((Number(d.SO2_CONC) * 5) + 450), 'y': this.longScale((Number(d.SO4_CONC) * 50) + 100),
+          'z': Number(d.SO2_CONC)});
         sensor4accData.push({'timeStamp': d.DATEOFF, 'x': this.accelrometerAdjustment(Number(d.SO2_CONC)),
           'y': this.accelrometerAdjustment(Number(d.SO4_CONC)), 'z': Number(d.SO2_CONC)});
         sensor4gyroData.push({'timeStamp': d.DATEOFF, 'x': d.NO3_CONC, 'y': d.HNO3_CONC});
-        sensor4pplData.push({'timeStamp': d.DATEOFF, 'x': Math.round(d.SO2_CONC)});
+        sensor4pplData.push({'timeStamp': d.DATEOFF, 'x': 0 });
       }
     });
 
@@ -222,8 +238,121 @@ export class InMemoryDataService implements InMemoryDbService {
 
   accelrometerAdjustment(val) {
     const sign = (Math.random() < 0.5 ? -1 : 1);
-    const result = ((val * Math.random() * 10) + 12 ) % 15;
+    const result = ((val * 10) + 12 ) % 12;
     return sign * result;
+  }
+
+  temperatureAdjustment(val) {
+    return Math.round(((val * 17 ) % 49) * 100 ) / 100;
+  }
+
+  temperatureIncrease() {
+    this.tempIndex ++;
+    const val = 15 + this.tempIndex;
+    if (val > 45) {
+      this.tempIndex = -45;
+    }
+    return val;
+  }
+
+  pressureDecrease() {
+    this.pressureIndex ++;
+    let val = 120 - this.pressureIndex;
+    if (val < 90) {
+      val = 90;
+    }
+    return val;
+  }
+
+  humidityIncrease() {
+    this.humidityIndex ++;
+    const val = 20 + this.humidityIndex;
+    if (val > 100) {
+      this.humidityIndex = -45;
+    }
+    return val;
+  }
+
+  humidityAdjustment(val) {
+    return Math.round((20 + ((val * 25) % 99)) * 100 ) / 100;
+  }
+
+  humidityLimiterLoc2(val) {
+    return val > 60 ? 60 : val;
+  }
+
+  pressureAdjustment(val) {
+    const val2 = Math.round((90 + ((val * 50) % 111)) * 100) / 100;
+    return (val2 > 110) ? 110 : val2;
+  }
+
+  peopleAdjustment() {
+    return Math.round(Math.random() * 10 ) % 6;
+  }
+
+  people2to3() {
+    return Math.round(2 + (Math.random() * 10) % 1);
+}
+
+  batteryAdjustment(val) {
+    return Math.round(((val * 100) % 100) * 100 ) / 100;
+  }
+
+  batteryDrain1(startVal) {
+    this.batteryIndex1 ++;
+    return startVal - (this.batteryIndex1 / 3 );
+  }
+  batteryDrain2(startVal) {
+    this.batteryIndex2 ++;
+    let result = startVal - (this.batteryIndex2);
+    if (result < 0) {
+      this.batteryIndex2 = -45;
+    }
+    if (result > 100) {
+      result = 100;
+    }
+    return result;
+  }
+  batteryDrain3(startVal) {
+    this.batteryIndex3 ++;
+    let result = startVal - (this.batteryIndex3 / 2);
+    if (result < 0) {
+      this.batteryIndex3 = -45;
+    }
+    if (result > 100) {
+      result = 100;
+    }
+    return result;
+  }
+  batteryDrain4(startVal) {
+    this.batteryIndex4 ++;
+    let result = startVal - (this.batteryIndex4 * 2);
+    if (result < 0) {
+      this.batteryIndex4 = -45;
+    }
+    if (result > 100) {
+      result = 100;
+    }
+    return result;
+  }
+
+  consistentSignal() {
+    return 75 + (Math.random() * 4);
+  }
+
+  lowbatSig() {
+    return 15 + (Math.random() * 4);
+  }
+
+  highestAcceleration(val) {
+    const highVal = val * 3;
+    if (highVal > 16) {
+      return 16;
+    } else if (highVal < -16) {
+      return -16;
+    } else {
+      return highVal;
+    }
   }
 
   lessThanHundred(val) {

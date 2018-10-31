@@ -46,7 +46,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
    */
   height = 700;
   width = 1400;
-  centerNode = {'x': 250, 'y': 250, width: 45, height: 40};
+  centerNode = {'x': 9.220, 'y': 48.84, width: 45, height: 40};
   pollingSubscription;
   acceleration = {source: {min: -16, max: 16},
     line: {min: -100, max: 100}};
@@ -60,8 +60,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
   ngOnInit() {
 
     // TODO domain lineMin and max
-    this.xScale = d3.scaleLinear().domain([0, 500]).range([margin.left, this.width - margin.right]);
-    this.yScale = d3.scaleLinear().domain([0, 500]).range([this.height - margin.bottom, margin.top]);
+    this.xScale = d3.scaleLinear().domain([9.200, 9.280]).range([margin.left, this.width - margin.right]);
+    this.yScale = d3.scaleLinear().domain([48.796, 48.9]).range([this.height - margin.bottom, margin.top]);
     // accelerometer values range from -16 to 16.
     this.lineLengthScale = d3.scaleLinear()
       .domain([this.acceleration.source.min, this.acceleration.source.max])
@@ -101,7 +101,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     this.svgContainer = d3.select('#sensorPosChart').append('svg');
     this.chartService.svgDimensionInit(this.svgContainer, this.width, this.height);
 
-    this.addZoom();
+    // this.addZoom();
+   // this.svgContainer.append('svg:image').attr('xlink:href', 'assets/map_sample.JPG').attr('opacity', 0.5);
     // Add grid
     this.xGridAxis = d3.axisBottom(this.xScale).tickSize( this.height , 0, 0);
     this.xGrid = this.svgContainer.append('g')
@@ -124,6 +125,8 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('cy', (d) => this.yScale(d.data[d.data.length - 2].y))
       .attr('r', this.positionCircle.radius)
       .attr('fill', 'white')
+      .on('mouseover', (d, i) => this.showDetails(d, i, this.xScale(d.data[d.data.length - 2].x), this.yScale(d.data[d.data.length - 2].y)))
+      .on('mouseout', (d, i, elem) => this.hideDetails(d, i, elem))
       .attr('stroke', 'black')
       .attr('stroke-width', this.positionCircle.strokeWidth);
 
@@ -167,7 +170,10 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('y', this.yScale(this.centerNode.y) - this.centerNode.height / 2)
       .attr('height', this.centerNode.height)
       .attr('width', this.centerNode.width)
-      .attr('fill', 'navy');
+      .attr('fill', 'navy')
+      .on('mouseover', (d, i) => this.showCenterDetails(d, i, this.xScale(this.centerNode.x) - this.centerNode.width / 2,
+        this.yScale(this.centerNode.y) - this.centerNode.height / 2))
+      .on('mouseout', (d, i) => this.hideCenterDetails(i));
 
     // add legend
     const xposition = 1200;
@@ -186,6 +192,90 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
       .attr('transform', 'translate(' + xposition  + ', ' + yposition + ')')
       .call(d3.axisBottom(axisScale).ticks(5));
 
+    this.svgContainer.append('text')
+      .attr('x', xposition)
+      .attr('y', yposition - 4)
+      .text('Acceleration')
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'black');
+
+  }
+
+  /**
+   * show details on mouseover of location
+   * @param d datapoint, instance of sensor-location
+   * @param i index
+   * @param elem html element
+   */
+  showDetails(d, i, x, y) {
+    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 100, height: 20}};
+    const toolTipText = {padding: {x: 33, y: 10}};
+    const animationDuration = 500;
+    let locationId;
+    if (d.id > 4) {
+      locationId = (d.id % 4) + 1;
+    } else {
+      locationId = d.id;
+    }
+
+    // Add background rectangle and animate
+    this.svgContainer.append('rect').attr('id', 'r' + d.x + '-' + d.y + '-' + i)
+      .attr('x', () => x + toolTipRect.padding.x)
+      .attr('y', () => y - toolTipRect.padding.y)
+      .attr('width', toolTipRect.pre.width).attr('height', toolTipRect.post.height)
+      .attr('fill', 'darkblue')
+      .transition().duration(animationDuration)
+      .attr('width', toolTipRect.post.width).attr('height', toolTipRect.post.height);
+
+    // add text
+    this.svgContainer.append('text').attr('id', 't1' + d.x + '-' + d.y + '-' + i)
+      .attr('x', () => x + toolTipText.padding.x)
+      .attr('y', () => y - toolTipText.padding.y)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text('Location: ' + d.id)
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
+      .attr('fill-opacity', 1);
+  }
+
+  showCenterDetails(d, i, x, y) {
+    const animationDuration = 500;
+    const toolTipRect = {padding: {x: 30, y: 25}, pre: { width: 1, height: 5}, post: {width: 100, height: 20}};
+    const toolTipText = {padding: {x: 33, y: 10}};
+
+    // Add background rectangle and animate
+    this.svgContainer.append('rect').attr('id', 'r' + i)
+      .attr('x', () => x + toolTipRect.padding.x)
+      .attr('y', () => y - toolTipRect.padding.y)
+      .attr('width', toolTipRect.pre.width).attr('height', toolTipRect.post.height)
+      .attr('fill', 'darkblue')
+      .transition().duration(animationDuration)
+      .attr('width', toolTipRect.post.width).attr('height', toolTipRect.post.height);
+
+    // add text
+    this.svgContainer.append('text').attr('id', 't1' + i)
+      .attr('x', () => x + toolTipText.padding.x)
+      .attr('y', () => y - toolTipText.padding.y)
+      .attr('font-size', 15).attr('font-family', 'helvetica').attr('fill', 'white')
+      .text('Central Node')
+      .attr('fill-opacity', 0.1)
+      .transition().delay(200).duration(animationDuration)
+      .attr('fill-opacity', 1);
+  }
+  hideCenterDetails(i) {
+    d3.select('#t1' + i).remove();
+    d3.select('#r' + i).remove();
+  }
+
+  /**
+   * hide details when mouse out of circle
+   * @param d data point
+   * @param i index
+   * @param elem html element
+   */
+  hideDetails(d, i, elem) {
+    const circle = d3.select(elem[i]);
+    d3.select('#t1' + d.x + '-' + d.y + '-' + i).remove();
+    d3.select('#r' + d.x + '-' + d.y + '-' + i).remove();
   }
 
   addZoom() {
