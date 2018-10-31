@@ -123,7 +123,6 @@ export class ChartComponent implements OnChanges, OnInit, OnDestroy {
     const xAxis = d3.axisBottom(xAxisScale).tickFormat(formatAxisDate);
 
     // y-axis
-    const yMax = d3.max(this.filteredData, (d) => d.y);
     const yScale = d3.scaleLinear()
       .domain([this.sensor.range.min, this.sensor.range.max])
       .range(_yRange);

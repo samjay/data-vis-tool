@@ -37,7 +37,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   pollingSubscription;
   locationCircleRadius = 15;
   legendSvg;
-  selectedOption = 2;
+  selectedOption = 6;
   realTimePlay = {
     buttonName: 'Play',
     playStatus: false
@@ -70,13 +70,13 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
       this.pollingSubscription = this.pollingService.pollingItem.subscribe(() => this.pollData());
       this.sensorService.getOverViewSensors().subscribe(sensorsList => {
         this.sensorTypes = sensorsList;
-        this.selectedSensorType = this.sensorTypes[2];
+        this.selectedSensorType = this.sensorTypes[0];
         this.sensorService.getSensorNetwork().subscribe(sensorNodes => {
           this.sensorSource = sensorNodes;
           this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
           this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(bToRColors);
           this.dataFrameLengthScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 100]);
-          // this.pollingService.startPolling(); TODO: uncomment after user study
+          this.pollingService.startPolling();
           this.showData();
           this.draw();
           this.ngProgress.done();
@@ -271,6 +271,11 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
   }
 
   typeSelected() {
+    if (this.selectedSensorType.id === 'A' || this.selectedSensorType.id === 'B') {
+      this.switchOptions(6);
+    } else {
+      this.switchOptions(7);
+    }
     this.dataOpacityScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 0.8]);
     this.dataColorScale = d3.scaleQuantize().domain(this.getDataDomainRange()).range(bToRColors);
     this.dataFrameLengthScale = d3.scaleLinear().domain(this.getDataDomainRange()).range([0, 100]);
@@ -319,7 +324,7 @@ export class TunnelNetworkComponent implements OnInit, OnDestroy {
         .attr('fill', (d) => {
           return this.dataColor(d);
         })
-        .attr('fill-opacity', 0.4);
+        .attr('fill-opacity', 0.6);
     }
     if (this.selectedOption === 3 || this.selectedOption === 7) {
       this.svgContainer.selectAll('.dataFrameRect').data(this.tunnelNet.locations).enter()

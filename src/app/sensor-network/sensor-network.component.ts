@@ -71,7 +71,7 @@ export class SensorNetworkComponent implements OnInit, OnDestroy {
       this.prepare();
       this.draw();
       this.ngProgress.done();
-      // this.pollingService.startPolling(); TODO: uncomment after user study
+      this.pollingService.startPolling();
     });
   }
 

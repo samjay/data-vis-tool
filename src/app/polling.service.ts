@@ -19,7 +19,7 @@ export class PollingService {
       this.started = true;
       this.pollingId = window.setInterval(() => {
         this.pollData();
-      }, 1000);
+      }, 1700);
     }
   }
 

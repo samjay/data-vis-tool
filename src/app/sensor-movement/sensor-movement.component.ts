@@ -102,7 +102,7 @@ export class SensorMovementComponent implements OnInit, OnDestroy {
     this.chartService.svgDimensionInit(this.svgContainer, this.width, this.height);
 
     // this.addZoom();
-    this.svgContainer.append('svg:image').attr('xlink:href', 'assets/map_sample.JPG').attr('opacity', 0.5);
+   // this.svgContainer.append('svg:image').attr('xlink:href', 'assets/map_sample.JPG').attr('opacity', 0.5);
     // Add grid
     this.xGridAxis = d3.axisBottom(this.xScale).tickSize( this.height , 0, 0);
     this.xGrid = this.svgContainer.append('g')
